@@ -1,0 +1,68 @@
+---
+# roles/vim/tasks/main.yml
+- name: Install git
+  become: yes
+  apt:
+    name: git
+    state: present
+  tags:
+    - github
+
+- name: Ensure .ssh directory exists
+  become: yes
+  file:
+    path: '/home/{{ user }}/.ssh'
+    state: directory
+    mode: '0700'
+  tags:
+    - github
+
+- name: Copy public key to remote
+  become: yes
+  copy:
+    src: ~/.ssh/id_rsa.pub
+    dest: '/home/{{ user }}/.ssh/id_rsa.pub'
+    owner: "{{ user }}"
+    group: "{{ group }}"
+    mode: '0644'
+  tags:
+    - github
+
+- name: Copy private key to remote
+  become: yes
+  copy:
+    src: ~/.ssh/id_rsa
+    dest: '/home/{{ user }}/.ssh/id_rsa'
+    owner: "{{ user }}"
+    group: "{{ group }}"
+    mode: '0600'
+  tags:
+    - github
+
+- name: Create a known_hosts file if it hasn't been created
+  become: yes
+  file:
+    path: '/home/{{ user }}/.ssh/known_hosts'
+    owner: '{{ user }}'
+    group: '{{ user }}'
+    mode: '0644'
+    state: touch
+  tags:
+    - github
+
+- name: Get the size of the known_hosts file
+  stat:
+    path: '/home/{{ user }}/.ssh/known_hosts'
+  register: known_hosts
+  tags:
+    - github
+
+# if we don't do this we can't automatically clone from github
+# To get this signature:
+# ssh-keyscan -t rsa github.com
+- name: register the github.com rsa key signature in our known_hosts file
+  known_hosts:
+    name: github.com
+    key: 'github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ=='
+  when: known_hosts.stat.size == 0
+

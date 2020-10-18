@@ -1,0 +1,3 @@
+---
+# site.yml, the high level playbook
+- import_playbook: intermediate.yml

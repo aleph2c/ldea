@@ -1,0 +1,20 @@
+---
+# roles/template/tasks/main.yml
+- debug:
+    msg: customizing the .bashrc file
+  tags:
+    - bashr
+
+- name: Set shell stty to sane to made pdb work better
+  lineinfile:
+    path: ~/.bashrc
+    line: PROMPT_COMMAND='stty sane'
+  tags:
+    - bashrc
+
+- name: Fix broken tmuxp environment assumption
+  lineinfile:
+    path: ~/.bashrc
+    line: export PATH=$PATH:$HOME/.local/bin
+  tags:
+    - bashrc

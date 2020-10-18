@@ -1,0 +1,40 @@
+---
+# roles/tmux/tasks/main.yml
+- name: Install tmux
+  become: yes
+  apt:
+    name: tmux
+    state: present
+  tags:
+    - tmux
+
+- name: Install custom .tmux.conf file
+  git:
+    repo: https://github.com/aleph2c/tmux.conf.git
+    dest: ~/.tmux
+    clone: yes
+    update: yes
+  tags:
+    - tmux
+
+- name: Create a softlink to the .tmux.conf file
+  file:
+    src: ~/.tmux/.tmux.conf
+    dest: ~/.tmux.conf
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    state: link
+
+- name: Get the home path for root
+  become: true
+  shell: |
+    cat /etc/passwd | grep root | awk 'BEGIN {FS=":"}; {print $6}'
+  register: root_path
+
+- name: Create a softlink to the .tmux.conf file for the root user
+  become: yes
+  file:
+    src: /home/{{ user }}/.tmux/.tmux.conf
+    dest: "{{ root_path.stdout }}/.tmux.conf"
+    state: link
+

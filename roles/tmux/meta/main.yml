@@ -1,0 +1,4 @@
+---
+# roles/template/meta/main.yml
+dependencies:
+  - role: github

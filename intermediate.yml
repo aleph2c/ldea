@@ -1,0 +1,8 @@
+---
+# intermediate.yml
+- hosts: all
+  roles:
+    - github
+    - tmux
+    - vim
+    - bashrc

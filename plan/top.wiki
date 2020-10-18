@@ -1,0 +1,92 @@
+*ldea*
+= Observer ([[local:/home/scott/.vimrc/ooda.pdf|diagram]]) = 
+== Evidence ([[evidence.top|evidence]]) ==
+
+  *What defines Success?:* ([[subgoals.top|subgoals]])
+    Get ansible directory setup
+
+  *What are the problems?*
+    * There is currently only a Readme.md file in the project
+    * The vimrc and tmux.conf files I use are in one repo, I should tease these appart
+    * I need a computer I can test this on
+
+  *Discoveries:* ([[notes.top|notes]])
+
+= Orient =
+  *Symptoms:* [[symptoms.top|symptoms]]
+
+== Questions ==
+
+  *Assumptions (at first invisible)*
+    To find your assumptions, look for two pieces of evidence that contradict
+    each other. (may have to wait a couple of loops)
+    * [ ] 
+
+  *Questions for ldea*
+  === Pre trouble-shooting questions ===
+    * [ ] Can you draw a diagram of the components and their interactions?
+    * [ ] Do you have enough information?
+    * [ ] Is your information organized?
+    * [ ] Do you need to write some code to make it easier to see?
+    * [ ] Can you think of anyway to speed up your feedback cycle?
+
+    * [ ] Is it a repair or a pioneering problem?  Did it work once before, or did it
+          work somewhere else?  Yes: Repair, No: Pioneering.
+
+  === Repair (Complexity increases exponentially) ===
+    * [ ] Can you test the individual components to reduce complexity?
+    * [ ] Can you exchange components?
+    * [ ] Can you reduce the number of interactions?
+    * [ ] Are you continuing even though you know that something you have previously
+          tested isn't working?
+    * [ ] Has a thing you have previously tested fooled you into thinking it works,
+          when it doesn't work? (Never assume something is right before you have
+          checked it twice)
+
+  == Pioneering ==
+    * [ ] Has someone else solved this before (search)? Can you turn this into a
+          repair?
+    * [ ] Do you have something to baseline from?
+    * [ ] Looking under the problem, are you focused on the right goals?  Are you
+          stuck on solving a hard problem, when there is an easy problem?
+    * [ ] Do you understand how your existing system works?  If not, can you draw
+          diagrams and describe how it works before you continue?
+    * [ ] What don't you know that you need to know?
+
+  == Custom Questions: (>=5) ==
+    * [ ] 
+    * [ ] 
+    * [ ] 
+    * [ ] 
+    * [ ] 
+
+= Decide =
+  [[#Questions]]
+  *Research Needed For?:*
+
+
+  [[#Questions]]
+  *Idea/Hypotheses for ldea: >=5*
+  * [ ] Setup naked Linux box you can test against
+  * [ ] Pull vimrc configuration out of vim_tmux repo
+  * [ ] Pull tmux.conf configuration out of vim_tmux repo
+  * [ ] Build vim via ldea
+  * [ ] Install vimrc via ldea
+  * [ ] Install tmux via ldea
+  * [ ] Install tmux.conf via ldea
+  * [ ] Add custom bashrc/profile stuff
+  * [ ] Install non-oracle Java via ldea
+  * [ ] Install Umlet via ldea
+  * [ ] Install inotify-tools
+  * [ ] Install custom python
+  * [ ] Install ruby
+  * [ ] Install sequence to .vim/.ruby
+
+  *Chosen Research-Goal/Hypothesis*
+    
+
+== Plan ([[plan.top|plan]]) ==
+
+= Act =
+  
+
