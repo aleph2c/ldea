@@ -2,7 +2,7 @@
 Linux Development Environment via Ansible
 
 I have come to dependend upon a custom development environment while working in Linux.  It includes a:
-* custom vimrv
+* custom .vimrc
 * build of vim from scratch
 * build of YouCompleteMe from vim
 * tmux and a custom configuration
