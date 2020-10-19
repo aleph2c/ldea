@@ -1,0 +1,4 @@
+# roles/umlet/meta/main.yml
+dependencies:
+  - role: java
+  - role: pip

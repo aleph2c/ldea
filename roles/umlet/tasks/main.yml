@@ -1,0 +1,94 @@
+---
+- name: Install ms fonts
+  become: yes
+  apt:
+    name: ttf-mscorefonts-installer
+    state: present
+  tags:
+    - umlet
+
+- name: Install inotify-toools
+  become: yes
+  apt:
+    name: inotify-tools
+    state: present
+  tags:
+    - umlet
+
+- name: Install graphviz
+  become: yes
+  apt:
+    name: graphviz
+    state: present
+  tags:
+    - umlet
+
+- name: Check if the Umlet directory exists
+  stat:
+    path: "/home/{{ user }}/Umlet"
+  register: umlet
+  tags:
+    - umlet
+    - umlet.sh
+
+
+- name: Unarchive UMLet 14.3.0
+  unarchive:
+    src: https://www.umlet.com/download/umlet_14_3/umlet-standalone-14.3.0.zip
+    dest: "/home/{{ user }}"
+    remote_src: yes
+  when: umlet.stat.exists == False
+  tags:
+    - umlet
+
+- name: Fix a bug in umlet.sh
+  get_url:
+    url: https://raw.githubusercontent.com/umlet/umlet/master/umlet-standalone/src/exe/umlet.sh
+    dest: "/home/{{ user }}/Umlet/umlet.sh"
+  when: umlet.stat.exists == False
+  tags:
+    - umlet
+    - umlet.sh
+
+- name: Enable execution of umlet.sh and umlet.jar files
+  file:
+    path: "/home/{{ user }}/Umlet/{{ item }}"
+    mode: '0744'
+  when: umlet.stat.exists == False
+  loop:
+    - umlet.sh
+    - umlet.jar
+  tags:
+    - umlet
+    - umlet.sh
+
+
+- name: Add umlet.sh to the path
+  lineinfile:
+    path: "/home/{{ user }}/.bashrc"
+    line: export PATH=$PATH:$HOME/Umlet
+  when: umlet.stat.exists == False
+  tags:
+    - bashrc
+    - umlet
+    - umlet.sh
+
+- name: Work around Umlet headless bug
+  lineinfile:
+    path: "/home/{{ user }}/.bashrc"
+    line: alias umlet="DISPAY= umlet.sh"
+  when: umlet.stat.exists == False
+  tags:
+    - bashrc
+    - umlet
+    - umlet.sh
+
+- name: Copy Custom UML State Machine.uxf into pallet
+  get_url:
+    url: https://raw.githubusercontent.com/aleph2c/umlet-statechart-template/master/Custom%20UML%20State%20Machine.uxf
+    dest: "/home/{{ user }}/Umlet/palettes/Custom UML State Machine.uxf"
+  when: umlet.stat.exists == False
+  tags:
+    - umlet
+    - umlet.sh
+

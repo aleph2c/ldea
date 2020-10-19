@@ -1,0 +1,31 @@
+---
+
+- name: Install vimrc
+  ignore_errors: True
+  git:
+    repo: "{{ pdbrc_repo }}"
+    dest: "~/.pdbrc_repo"
+  tags:
+    - pdb
+
+- name: Create a softlink to the .pdbrc file
+  file:
+    src: ~/.pdbrc_repo/.pdbrc
+    dest: ~/.pdbrc
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    state: link
+  tags:
+    - python
+    - pdb
+
+- name: Create a softlink to the .pdbrc.py file
+  file:
+    src: ~/.pdbrc_repo/.pdbrc.py
+    dest: ~/.pdbrc.py
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    state: link
+  tags:
+    - python
+    - pdb

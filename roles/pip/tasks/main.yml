@@ -1,0 +1,25 @@
+---
+- name: Ensure python3-venv and python3-pip are installed
+  become: yes
+  apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+  - python3-venv
+  - python3-pip
+  tags:
+  - python
+
+- name: Install basic pip packages
+  become: yes
+  pip:
+    name: "{{ item }}"
+    extra_args: "--upgrade"
+    executable: pip3
+  loop:
+    - pip
+    - scons
+    - future
+  tags:
+    - python
+

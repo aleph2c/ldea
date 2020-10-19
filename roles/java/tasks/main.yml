@@ -1,0 +1,9 @@
+---
+- name: install an open version of Java (openjdk-8-jdk)
+  become: yes
+  apt:
+    name: openjdk-8-jdk
+    state: present
+  tags:
+    - java
+
