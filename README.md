@@ -5,16 +5,15 @@ ldea: Linux Development Environment via Ansible.
 Install:
 
   * Tmux and a customized Tmux configuration
-  * Build a full featured vim8.2 natively on remote machine
-  * Install custom .vimrc
+  * Build a full featured vim8.2 natively on the remote/local machine
+  * Install a custom .vimrc
   * Use the Plugin manager to install vim plugins
   * Build YouCompleteMe for vim8.2
   * Customize the python environment
   * Customize the python debugger
-  * Customize the .bashrc file
+  * Customize your .bashrc file
   * Install and then fix Umlet ('umlet' will work from command line)
   * Install a custom umlet template
-
 
 # Initial setup of keys on deployment machine
 
@@ -23,17 +22,16 @@ Login to your deployment machine:
 ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
 ```
 
-Copy public keys to your [github
+Copy public keys,  ``cat ~/.ssh/id_rsa.pub``, to your [github
 keys](https://github.com/settings/keys).  Make a point of naming the key entry
 after the contract/project you are working on, you will remove this access after you
 have finished the work.
 
-
 # Quick Start
 
 Ensure the remote has a .ssh directory, and then copy your public and private
-key onto the machine, so that that machine will have the same access to github that
-your deployment computer has.
+key onto the machine.  The remote machine will have the same access to github that
+your deployment computer has:
 
 ```
 cat ~/.ssh/id_rsa.pub | ssh <remote_user>@<ip> "mdir -p ~/.ssh && chmod 700 && cat >> ~/.ssh/authorized_keys"
@@ -42,7 +40,7 @@ scp ~/.ssh/id_rsa.pub <remote_user>@<ip>:~/.ssh
 
 ```
 
-Install ansible on the machine you will be deploying from
+Install ansible on the machine you will be deploying from:
 
 ```
 python3 -m venv venv
@@ -65,13 +63,13 @@ Run the installation:
 ansible-playbook -i personal site.yml
 ```
 
-To only install tmux, vim, your vimrc, it's plugins and YouCompleteMe:
+To only install tmux, vim, your .vimrc, it's plugins and YouCompleteMe:
 
 ```
 ansible-playbook -i personal basic_development_env.yml
 ```
 
-To only install a non-broken version (works headlessly) of UMLet:
+To only install a non-broken version of UMLet (works headlessly as the 'umlet' command in bash):
 
 ```
 ansible-playbook -i personal umlet.yml
