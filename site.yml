@@ -1,3 +1,5 @@
 ---
-# site.yml, the high level playbook
-- import_playbook: intermediate.yml
+# site.yml, (what to run if you want to install "everything")
+- import_playbook: basic_development_env.yml
+- import_playbook: python_env.yml
+- import_playbook: umlet.yml

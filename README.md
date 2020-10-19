@@ -1,23 +1,39 @@
 # ldea
 
-Linux Development Environment via Ansible, to have a single location from which
-you can switch all of your keys.
+ldea: Linux Development Environment via Ansible.
 
-I have come to depend upon a custom development environment while working in Linux.  It includes a:
-* custom .vimrc
-* build of vim from scratch
-* build of YouCompleteMe from vim
-* tmux and its customization
-* UMLet drawing tools (Java support)
-* custom scons builds for UMLet
-* access to my git repos
+Install:
+
+  * Tmux and a customized Tmux configuration
+  * Build a full featured vim8.2 natively on remote machine
+  * Install custom .vimrc
+  * Use the Plugin manager to install vim plugins
+  * Build YouCompleteMe for vim8.2
+  * Customize the python environment
+  * Customize the python debugger
+  * Customize the .bashrc file
+  * Install and then fix Umlet ('umlet' will work from command line)
+  * Install a custom umlet template
+
+
+# Initial setup of keys on deployment machine
+
+Login to your deployment machine:
+```
+ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+```
+
+Copy public keys to your [github
+keys](https://github.com/settings/keys).  Make a point of naming the key entry
+after the contract/project you are working on, you will remove this access after you
+have finished the work.
+
 
 # Quick Start
 
-This deployment strategy assumes that the keys on the remote machine are the same as
-this machine.  This way you won't have to manage multiple sets of keys in your lab, and
-it will be an easy thing to switch your keys as you switch contracts. (leaving
-behind harmless baby-borgs).
+Ensure the remote has a .ssh directory, and then copy your public and private
+key onto the machine, so that that machine will have the same access to github that
+your deployment computer has.
 
 ```
 cat ~/.ssh/id_rsa.pub | ssh <remote_user>@<ip> "mdir -p ~/.ssh && chmod 700 && cat >> ~/.ssh/authorized_keys"
@@ -27,9 +43,37 @@ scp ~/.ssh/id_rsa.pub <remote_user>@<ip>:~/.ssh
 ```
 
 Install ansible on the machine you will be deploying from
+
 ```
 python3 -m venv venv
 . ./venv/bin/activate
 pip install ansible
-ansible-playbook -i personal lde.yml
+```
+
+Create an inventory file ('personal' example below):
+```
+[all]
+10.0.0.23 ansible_connection=ssh ansible_user=<remote_user>
+```
+
+Update your ``group_vars/all`` file with the correct user, group, vimrc repo,
+tmux configuration repo and .pdb configuration repo.
+
+
+Run the installation:
+```
+ansible-playbook -i personal site.yml
+```
+
+To only install tmux, vim, your vimrc, it's plugins and YouCompleteMe:
+
+```
+ansible-playbook -i personal basic_development_env.yml
+```
+
+To only install a non-broken version (works headlessly) of UMLet:
+
+```
+ansible-playbook -i personal umlet.yml
+
 ```

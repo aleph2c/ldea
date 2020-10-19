@@ -1,8 +1,14 @@
 ---
 user: pi
 group: pi
+ansible_python_interpreter: "auto"
+
+vimrc_repo: "git@github.com:aleph2c/.vim.git"
+tmuxc_repo: "git@github.com:aleph2c/tmux.conf.git"
+pdbrc_repo: "git@github.com:aleph2c/pdb.conf.git"
+
 vim_version: "8.2"
 vim_source_dir: "/tmp/vim"
 vim_condensed_version: "82"
 vim_bin_dir: "/usr/local/share/vim/vim82"
-vimrc_repo: "https://github.com/aleph2c/vim_tmux.git"
+

@@ -12,6 +12,11 @@
   tags:
     - bashrc
 
+- name: Esure the ~/.local directory exists
+  file:
+    path: $HOME/.local
+    state: directory
+
 - name: Fix broken tmuxp environment assumption
   lineinfile:
     path: ~/.bashrc

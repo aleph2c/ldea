@@ -10,7 +10,7 @@
 
 - name: Install custom .tmux.conf file
   git:
-    repo: https://github.com/aleph2c/tmux.conf.git
+    repo: "{{ tmuxc_repo }}"
     dest: ~/.tmux
     clone: yes
     update: yes

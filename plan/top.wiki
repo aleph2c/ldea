@@ -3,12 +3,9 @@
 == Evidence ([[evidence.top|evidence]]) ==
 
   *What defines Success?:* ([[subgoals.top|subgoals]])
-    Get ansible directory setup
+    Describe what you have done
 
   *What are the problems?*
-    * There is currently only a Readme.md file in the project
-    * The vimrc and tmux.conf files I use are in one repo, I should tease these appart
-    * I need a computer I can test this on
 
   *Discoveries:* ([[notes.top|notes]])
 
@@ -67,20 +64,19 @@
 
   [[#Questions]]
   *Idea/Hypotheses for ldea: >=5*
-  * [ ] Setup naked Linux box you can test against
-  * [ ] Pull vimrc configuration out of vim_tmux repo
-  * [ ] Pull tmux.conf configuration out of vim_tmux repo
-  * [ ] Build vim via ldea
-  * [ ] Install vimrc via ldea
-  * [ ] Install tmux via ldea
-  * [ ] Install tmux.conf via ldea
-  * [ ] Add custom bashrc/profile stuff
-  * [ ] Install non-oracle Java via ldea
-  * [ ] Install Umlet via ldea
-  * [ ] Install inotify-tools
-  * [ ] Install custom python
-  * [ ] Install ruby
-  * [ ] Install sequence to .vim/.ruby
+  * [X] Setup naked Linux box you can test against
+  * [X] Pull vimrc configuration out of vim_tmux repo
+  * [X] Pull tmux.conf configuration out of vim_tmux repo
+  * [X] Build vim via ldea
+  * [X] Install vimrc via ldea
+  * [X] Install tmux via ldea
+  * [X] Install tmux.conf via ldea
+  * [X] Add custom bashrc/profile stuff
+  * [X] Install non-oracle Java via ldea
+  * [X] Install Umlet via ldea
+  * [X] Install inotify-tools
+  * [X] Install custom python
+  * [ ] Update the Readme.md file
 
   *Chosen Research-Goal/Hypothesis*
     

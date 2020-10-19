@@ -17,6 +17,7 @@
     - inotify-tools
   tags:
     - vim
+    - vimrc
 
 - name: Install vimrc
   ignore_errors: True
@@ -25,21 +26,7 @@
     dest: "~/.vim"
   tags:
     - vim
-
-# This is a mix of vim and tmux and pdb
-- name: Softlink dot files
-  shell: "{{ item }}"
-  loop:
-    - "ln -s ~/.vim/.vimrc ~/.vimrc"
-    - "ln -s ~/.vim/snippets ~/snippets"
-    - "ln -s ~/.vim/.pdbrc ~/.pdbrc"
-    - "ln -s ~/.vim/.pdbrc.py ~/.pdbrc.py"
-  ignore_errors: True
-  args:
-    chdir: "~"
-  tags:
-    - vim
-
+    - vimrc
 
 - name: Create a softlink to the .vimrc file
   file:
@@ -50,6 +37,7 @@
     state: link
   tags:
     - vim
+    - vimrc
 
 - name: Create a softlink to the snippets directory
   file:
@@ -60,26 +48,8 @@
     state: link
   tags:
     - vim
+    - vimrc
 
-- name: Create a softlink to the .pdbrc file
-  file:
-    src: ~/.vim/.pdbrc
-    dest: ~/.pdbrc
-    owner: "{{ user }}"
-    group: "{{ user }}"
-    state: link
-  tags:
-    - vim
-
-- name: Create a softlink to the .pdbrc.py file
-  file:
-    src: ~/.vim/.pdbrc.py
-    dest: ~/.pdbrc.py
-    owner: "{{ user }}"
-    group: "{{ user }}"
-    state: link
-  tags:
-    - vim
 
 - name: Get the home path for root
   become: true
@@ -88,6 +58,7 @@
   register: root_path
   tags:
     - vim
+    - vimrc
 
 - name: Create a softlink to the snippets directory for the root user
   become: yes
@@ -97,15 +68,27 @@
     state: link
   tags:
     - vim
+    - vimrc
+
+- name: Create a softlink to the .vim directory for the root user
+  become: yes
+  file:
+    src: "/home/{{ user }}/.vim"
+    dest: "{{ root_path.stdout }}/.vim"
+    state: link
+  tags:
+    - vim
+    - vimrc
 
 - name: Create a softlink to the .vimrc file for the root user
   become: yes
   file:
     src: "/home/{{ user }}/.vim/.vimrc"
-    dest: "{{ root_path.stdout }}/.tmux.conf"
+    dest: "{{ root_path.stdout }}/.vimrc"
     state: link
   tags:
     - vim
+    - vimrc
 
 - name: Create a softlink to the .pdbrc file for the root user
   become: yes
@@ -115,6 +98,13 @@
     state: link
   tags:
     - vim
+    - vimrc
+
+- name: Check if YouCompleteMe directory exists
+  stat:
+    path: "/home/{{ user }}/.vim/plugged/YouCompleteMe"
+  register: ycm
+
 
 # This will install all of the required vim plugins
 - name: Have plugged plugin pull down all required vim packages
@@ -124,12 +114,14 @@
     stdin: "\n"
   tags:
     - vim
+    - vimrc
 
 # This will make text auto-completion run on the computer in vim
 - name: Make text auto-completion package for vim
   shell: "python3 ./install.py"
   args:
     chdir: "~/.vim/plugged/YouCompleteMe"
+  when: ycm.stat.exists == False
   tags:
     - vim
-
+    - vimrc
