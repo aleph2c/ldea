@@ -1,0 +1,89 @@
+- name: Test to see if agent forwarding is enabled in the remote sshd
+  become: yes
+  shell:
+    grep -c "^AllowAgentForwarding yes" /etc/ssh/sshd_config || true
+  register: agentforwarding
+  tags:
+    - sshd
+
+- name: Enable agent forwarding for sshd on the remote computer
+  become: yes
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    line: AllowAgentForwarding yes
+  when: agentforwarding.stdout == '0'
+  tags:
+    - sshd
+
+- name: "Make sure known_hosts file exists in the .ssh directory of {{ user }}"
+  file:
+    path: "/home/{{ user }}/.ssh/known_hosts"
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    mode: '0600'
+    state: touch
+
+- name: "Make sure known_hosts file exists in the .ssh directory of {{ user }}"
+  file:
+    path: "/home/{{ user }}/.ssh/config"
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    mode: '0600'
+    state: touch
+
+- name: "Update the ./ssh/config file"
+  lineinfile:
+    path: "/home/{{ user }}/.ssh/config"
+    state: present
+    line: "{{ item }}"
+  with_items:
+    - "Host *"
+    - "StrictHostKeyChecking no"
+
+- name: "Make sure known_hosts file exists in the .ssh directory of {{ user }}"
+  file:
+    path: "/home/{{ user }}/.ssh/config"
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    mode: '0400'
+    state: touch
+
+- name: Test to see if github.com keys are defined known_hosts
+  shell: |
+    touch /home/{{user}}/.ssh/known_hosts
+    grep -c 'github.com' /home/{{user}}/.ssh/known_hosts || true
+  register: github_bash
+  args:
+    warn: false
+  tags:
+    - sshd
+
+- name: Push the github.com keys into known_hosts
+  shell: |
+    ssh-keyscan github.com >> /home/{{ user }}/.ssh/known_hosts
+  when: github_bash.stdout == '0'
+  tags:
+    - sshd
+
+- name: Reboot the machine, forcing ssh to connect with agent forwarding
+  become: yes
+  when: agentforwarding.stdout == '0'
+  reboot:
+    reboot_timeout: 200
+  tags:
+    - sshd
+
+- name: Add custom ansible ssh commands
+  lineinfile:
+    path: ~/.bashrc
+    line: source ~/.ansible_bash.rc
+  tags:
+    - ssh
+
+- name: Write the .ansible_bash.rc file
+  ignore_errors: True
+  template:
+    src: "{{ role_path }}/templates/home/user/.ansible_bash.rc.j2"
+    dest: /home/{{ user }}/.ansible_bash.rc
+  tags:
+    - ssh

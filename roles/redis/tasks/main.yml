@@ -1,0 +1,7 @@
+- name: Install redis
+  become: yes
+  apt:
+    name: redis
+    state: present
+  tags:
+    - redis
