@@ -58,3 +58,15 @@
     group: root
   tags:
     - ansible
+
+- name: Set the git user.name
+  shell:
+    "git config --global user.name {{ git_user }}"
+  tags:
+    - ansible
+
+- name: Set the git email address
+  shell:
+    "git config --global user.email {{ git_email }}"
+  tags:
+    - ansible
