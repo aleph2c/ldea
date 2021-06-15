@@ -2,7 +2,13 @@
 
 ldea: Linux Development Environment via Ansible.
 
-Install:
+Install a trusted deployment machine:
+
+  * A deployment machine with access to github
+  * An ssh forwarding strategy to keep your keys off of your target machines
+  * Access to an encrypted vault on the deployment machine (currently not used)
+
+Perform the following on a target(s) from the deployment machine:
 
   * Tmux and a customized Tmux configuration
   * Build a full featured vim8.2 natively on the remote/local machine
@@ -15,7 +21,7 @@ Install:
   * Install and then fix Umlet ('umlet' will work from command line)
   * Install a custom umlet template
 
-# Initial setup of keys on deployment machine
+# Initial setup of Deployment Machine
 
 Login to your deployment machine:
 ```
@@ -27,36 +33,60 @@ keys](https://github.com/settings/keys).  Make a point of naming the key entry
 after the contract/project you are working on, you will remove this access after you
 have finished the work.
 
-# Quick Start
-
-Ensure the remote has a .ssh directory, and then copy your public and private
-key onto the machine.  The remote machine will have the same access to github that
-your deployment computer has:
-
+# Install your deployment machine using ansible
+Clone this repo:
 ```
-cat ~/.ssh/id_rsa.pub | ssh <remote_user>@<ip> "mdir -p ~/.ssh && chmod 700 && cat >> ~/.ssh/authorized_keys"
-scp ~/.ssh/id_rsa <remote_user>@<ip>:~/.ssh
-scp ~/.ssh/id_rsa.pub <remote_user>@<ip>:~/.ssh
-
+git clone git@github.com:aleph2c/ldea.git
+cd ldea
 ```
 
-Install ansible on the machine you will be deploying from:
-
+Create a personal inventory from the personal_example:
 ```
-python3 -m venv venv
-. ./venv/bin/activate
-pip install ansible
+cp personal_example personal
 ```
 
-Create an inventory file ('personal' example below):
+Customize your personal inventory:
 ```
 [all]
-10.0.0.23 ansible_connection=ssh ansible_user=<remote_user>
+10.0.0.21
+10.0.0.22
+
+[deployment_machine]
+10.0.0.21
+
+[targets]
+10.0.0.22
+# more ...
+```
+
+Setup the virtual environment:
+```
+# in ldea
+python3 -m venv venv
+source ./venv/bin/active
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+Setup your deployment machine:
+```
+ansible-playbook -i personal deployment_machine.yml
+```
+
+# Quick Start
+
+Copy your deployment machine's public keys to your target machines.  This will
+let ansible ssh to the target without a password.
+
+```
+# on deployment machine 10.0.0.21
+ssh-copy-id pi@10.0.0.22
+# .. same command for other targets
+
 ```
 
 Update your ``group_vars/all`` file with the correct user, group, vimrc repo,
 tmux configuration repo and .pdb configuration repo.
-
 
 Run the installation:
 ```
@@ -69,9 +99,9 @@ To only install tmux, vim, your .vimrc, it's plugins and YouCompleteMe:
 ansible-playbook -i personal basic_development_env.yml
 ```
 
-To only install a non-broken version of UMLet (works headlessly as the 'umlet' command in bash):
+To only install the python basic environment
 
 ```
-ansible-playbook -i personal umlet.yml
+ansible-playbook -i personal python_env.yml
 
 ```

@@ -1,4 +1,4 @@
 ---
 # roles/pdb/meta/main.yml
 dependencies:
-  - role: github
+  - role: git
