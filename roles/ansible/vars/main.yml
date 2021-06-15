@@ -1,0 +1,3 @@
+---
+ansible_git_repo: git@github.com:aleph2c/ldea.git
+ansible_dir: ldea

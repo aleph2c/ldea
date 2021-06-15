@@ -1,0 +1,60 @@
+---
+- name: Enable ssh-forwarding from ldea deployment machine
+  lineinfile:
+    path: ~/.bashrc
+    line: "{{ item }}"
+  loop:
+    - 'eval $(ssh-agent)'
+    - 'ssh-add ~/.ssh/id_rsa'
+    - 'export ANSIBLE_VAULT_PASSWORD_FILE=./.vault_pass'
+  tags:
+    - ansible
+
+- name: Test to see if the ansible vault password is in .bashrc file
+  shell:
+    grep -c "VAULT_PASSWORD" ~/.bashrc || true
+  register: vault_password
+  tags:
+    - ansible
+
+- name: Install specified requirements in indicated venv
+  pip:
+    requirements: "/home/{{ user }}/{{ ansible_dir }}/requirements.txt"
+    virtualenv: "/home/{{ user }}/{{ ansible_dir }}/venv"
+    virtualenv_command: /usr/bin/python3 -m venv
+  tags:
+    - ansible
+
+- name: If VAULT_PASSWORD not defined add a place holder
+  lineinfile:
+    path: ~/.bashrc
+    line: export VAULT_PASSWORD="this will be the password to your vault"
+  when: vault_password.stdout == '0'
+  tags:
+    - ansible
+
+- name: Test to see if ANSIBLE_HOST_KEY_CHECKING is defined in the .bashrc file
+  shell:
+    grep -c "ANSIBLE_HOST_KEY_CHECKING" ~/.bashrc || true
+  register: ansible_host_key_checking_bash
+  tags:
+    - ansible
+
+- name: Turn off ansible hostkey checking
+  lineinfile:
+    path: ~/.bashrc
+    line: export ANSIBLE_HOST_KEY_CHECKING=False
+  when: ansible_host_key_checking_bash.stdout == '0'
+  tags:
+    - ansible
+
+- name: Write the ansible configuration file
+  become: true
+  copy:
+    src: "{{ role_path }}/files/ansible.cfg"
+    dest: "{{ role_path }}/../../ansible.cfg"
+    mode: '0644'
+    owner: root
+    group: root
+  tags:
+    - ansible
