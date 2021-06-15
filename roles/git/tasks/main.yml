@@ -1,0 +1,10 @@
+---
+# roles/vim/tasks/main.yml
+- name: Install git
+  become: yes
+  apt:
+    name: git
+    state: present
+  tags:
+    - github
+

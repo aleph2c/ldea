@@ -3,23 +3,26 @@
 - debug:
     msg: customizing the .bashrc file
   tags:
-    - bashr
-
-- name: Set shell stty to sane to made pdb work better
-  lineinfile:
-    path: ~/.bashrc
-    line: PROMPT_COMMAND='stty sane'
-  tags:
     - bashrc
 
 - name: Esure the ~/.local directory exists
   file:
     path: $HOME/.local
     state: directory
-
-- name: Fix broken tmuxp environment assumption
-  lineinfile:
-    path: ~/.bashrc
-    line: export PATH=$PATH:$HOME/.local/bin
   tags:
     - bashrc
+
+- name: Set shell stty to sane to made pdb work better
+  lineinfile:
+    path: ~/.bashrc
+    line: "{{ item }}"
+  loop:
+    - PROMPT_COMMAND='stty sane'
+    - export PATH=$PATH:$HOME/.local/bin
+    - 'complete -o default -o nospace -W "$(grep "^Host" $HOME/.ssh/config | cut -d "" -f2)" scp sftp ssh'
+    - 'git config --global alias.graph "log --graph --abbrev-commit --decorate --oneline --all"'
+    - "alias activate='source ./venv/bin/activate'"
+  tags:
+    - bashrc
+
+

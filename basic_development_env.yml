@@ -1,8 +1,8 @@
 ---
 # basic_development_env.yml (just the development environment)
-- hosts: all
+- hosts: targets
   roles:
-    - github
+    - git
     - tmux
     - vim
     - bashrc

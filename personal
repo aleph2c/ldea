@@ -1,5 +1,9 @@
 [all]
-10.0.0.23 ansible_connection=ssh ansible_user=pi
+10.0.0.21
+10.0.0.22
 
 [deployment_machine]
-10.0.0.23
+10.0.0.21
+
+[targets]
+10.0.0.22
