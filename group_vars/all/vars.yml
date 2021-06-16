@@ -1,6 +1,6 @@
 ---
-user: pi
-group: pi
+user: scott
+group: scott
 ansible_python_interpreter: "auto"
 
 git_user: Scott Volk
