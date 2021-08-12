@@ -1,10 +1,10 @@
 ---
-user: scott
-group: scott
+user: pi
+group: pi
 ansible_python_interpreter: "auto"
 
 git_user: Scott Volk
-git_email: scottvolk@gmail.com
+git_email: scott@13down.io
 
 vimrc_repo: "git@github.com:aleph2c/.vim.git"
 tmuxc_repo: "git@github.com:aleph2c/tmux.conf.git"
@@ -13,6 +13,7 @@ pdbrc_repo: "git@github.com:aleph2c/pdb.conf.git"
 vim_version: "8.2"
 vim_source_dir: "/tmp/vim"
 vim_condensed_version: "82"
+vim_share_dir: "/usr/local/share"
 vim_bin_dir: "/usr/local/share/vim/vim82"
 
 

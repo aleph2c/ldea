@@ -79,6 +79,15 @@
   tags:
     - vim
 
+- name: Make the vim shared directory
+  become: yes
+  file:
+    path: "{{ vim_bin_dir }}"
+    state: directory
+    mode: '0755'
+  tags:
+    - vim
+
 - name: Configure the vim directory for a build
   shell: |
     ./configure --with-features=huge \
