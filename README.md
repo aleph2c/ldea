@@ -34,6 +34,9 @@ after the contract/project you are working on, you will remove this access after
 have finished the work.
 
 # Install your deployment machine using ansible
+
+Update your ``group_vars/all`` file with the correct user, group.
+
 Clone this repo:
 ```
 git clone git@github.com:aleph2c/ldea.git
@@ -70,8 +73,16 @@ pip install -r requirements.txt
 
 Setup your deployment machine:
 ```
-ansible-playbook -i personal deployment_machine.yml
+ansible-playbook -i personal deployment_machine.yml -K
 ```
+
+Re-initialize bash and restart your venv.
+```
+source ~/.bashrc
+source ./venv/bin/activate
+```
+
+When this is done, ansible will work using ssh key forwarding.
 
 # Quick Start
 
