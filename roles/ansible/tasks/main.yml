@@ -18,10 +18,11 @@
     - ansible
 
 - name: Install specified requirements in indicated venv
-  pip:
-    requirements: "/home/{{ user }}/{{ ansible_dir }}/requirements.txt"
-    virtualenv: "/home/{{ user }}/{{ ansible_dir }}/venv"
-    virtualenv_command: /usr/bin/python3 -m venv
+  shell:
+    cmd: "{{playbook_dir}}/venv/bin/pip install -r {{playbook_dir}}/requirements.txt"
+  args:
+    chdir: "/home/{{ user }}/{{ ansible_dir }}/venv"
+    executable: /usr/bin/bash
   tags:
     - ansible
 

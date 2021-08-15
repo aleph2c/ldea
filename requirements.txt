@@ -9,7 +9,6 @@ kaptan==0.5.12
 libtmux==0.9.0
 MarkupSafe==2.0.1
 packaging==20.9
-pkg-resources==0.0.0
 pycparser==2.20
 pyparsing==2.4.7
 PyYAML==5.4.1
