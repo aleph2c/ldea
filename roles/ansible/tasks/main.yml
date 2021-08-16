@@ -17,11 +17,19 @@
   tags:
     - ansible
 
+- name: Debug bullshit ansible vars
+  debug:
+    msg: "playbook_dir: {{playbook_dir}}"
+
+- name: Debug bullshit ansible vars
+  debug:
+    msg: "ansible_dir: {{ansible_dir}}"
+
 - name: Install specified requirements in indicated venv
   shell:
     cmd: "{{playbook_dir}}/venv/bin/pip install -r {{playbook_dir}}/requirements.txt"
   args:
-    chdir: "/home/{{ user }}/{{ ansible_dir }}/venv"
+    chdir: "{{ playbook_dir }}/venv"
     executable: /usr/bin/bash
   tags:
     - ansible
@@ -71,3 +79,4 @@
     "git config --global user.email {{ git_email }}"
   tags:
     - ansible
+
