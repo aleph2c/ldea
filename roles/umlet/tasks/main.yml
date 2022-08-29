@@ -1,4 +1,12 @@
 ---
+- name: Install unzip
+  become: yes
+  apt:
+    name: unzip
+    state: present
+  tags:
+    - umlet
+
 - name: Install ms fonts
   become: yes
   apt:

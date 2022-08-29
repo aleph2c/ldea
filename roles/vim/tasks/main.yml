@@ -1,137 +1,137 @@
 ---
-- debug:
-    msg: installing vim
-
-- name: Added required packages for vim
-  become: yes
-  apt:
-    name: "{{ item }}"
-    state: present
-  loop:
-    - libncurses5-dev
-    - libgnome2-dev
-    - libgnomeui-dev
-    - libgtk2.0-dev 
-    - libatk1.0-dev
-    - libbonoboui2-dev
-    - libcairo2-dev
-    - libx11-dev
-    - libxpm-dev
-    - libxt-dev
-    - python-dev
-    - python3-dev
-    - ruby-dev
-    - lua5.2
-    - liblua5.2-dev
-    - libperl-dev
-    - git
-    - build-essential
-  ignore_errors: True
-  tags:
-    - vim
-
-- name: Determine if vim is not installed
-  shell: which vim
-  ignore_errors: True
-  register: old_vim_path
-  tags:
-    - vim
-
-- name: "Determine if installed vim is {{ vim_version }}"
-  shell: vim --version | grep "IMproved {{ vim_version }}"
-  register: vim_version
-  ignore_errors: True
-  tags:
-    - vim
-
-- name: Determine if vim built with python3
-  shell: vim --version | grep "+python3"
-  register: vim_py3
-  ignore_errors: True
-  tags:
-    - vim
-
-- name: Remove old version of vim
-  become: yes
-  apt:
-    name: "{{ item }}"
-    state: absent
-    purge: yes
-    autoremove: yes
-  when: old_vim_path.stdout == "" or vim_py3.stdout == "" or vim_version.stdout == ""
-  ignore_errors: yes
-  loop:
-    - vim
-    - vim-tiny
-    - vim-common
-    - vim-gui-common
-    - vim-nox
-  tags:
-    - vim
-
-- name: Pull down the vim source code
-  git:
-    repo: 'https://github.com/vim/vim.git'
-    dest: "{{ vim_source_dir }}"
-    clone: yes
-    update: yes
-  when: old_vim_path.stdout == "" or vim_py3.stdout == "" or vim_version.stdout == ""
-  tags:
-    - vim
-
-- name: Make the vim shared directory
-  become: yes
-  file:
-    path: "{{ vim_bin_dir }}"
-    state: directory
-    mode: '0755'
-  tags:
-    - vim
-
-- name: Configure the vim directory for a build
-  shell: |
-    ./configure --with-features=huge \
-      --enable-multibyte \
-      --enable-rubyinterp=yes \
-      --enable-python3interp=yes \
-      --with-python3-config-dir=$(python3-config --configdir) \
-      --enable-perlinterp=yes \
-      --enable-luainterp=yes \
-      --enable-gui=gtk2 \
-      --enable-cscope \
-      --prefix=/usr/local
-  when: old_vim_path.stdout == "" or vim_py3.stdout == "" or vim_version.stdout == ""
-  args:
-    chdir: "{{ vim_source_dir }}"
-  tags:
-    - vim
-
-- name: Make vim
-  become: yes
-  shell: "make VIMRUNTIMEDIR={{ vim_bin_dir }}"
-  when: old_vim_path.stdout == "" or vim_py3.stdout == "" or vim_version.stdout == ""
-  args:
-    chdir: "{{ vim_source_dir }}"
-  tags:
-    - vim
-
-- name: Install vim
-  become: yes
-  shell: "make install"
-  when: old_vim_path.stdout == "" or vim_py3.stdout == "" or vim_version.stdout == ""
-  args:
-    chdir: "{{ vim_source_dir }}"
-  tags:
-    - vim
-
-- name: Remove the vim source from your computer
-  become: yes
-  when: old_vim_path.stdout == "" or vim_py3.stdout == "" or vim_version.stdout == ""
-  file:
-    path: "{{ vim_source_dir }}"
-    state: absent
-  tags:
-    - vim
+#- debug:
+#    msg: installing vim
+#
+#- name: Added required packages for vim
+#  become: yes
+#  apt:
+#    name: "{{ item }}"
+#    state: present
+#  loop:
+#    - libncurses5-dev
+#    - libgnome2-dev
+#    - libgnomeui-dev
+#    - libgtk2.0-dev 
+#    - libatk1.0-dev
+#    - libbonoboui2-dev
+#    - libcairo2-dev
+#    - libx11-dev
+#    - libxpm-dev
+#    - libxt-dev
+#    - python-dev
+#    - python3-dev
+#    - ruby-dev
+#    - lua5.2
+#    - liblua5.2-dev
+#    - libperl-dev
+#    - git
+#    - build-essential
+#  ignore_errors: True
+#  tags:
+#    - vim
+#
+#- name: Determine if vim is not installed
+#  shell: which vim
+#  ignore_errors: True
+#  register: old_vim_path
+#  tags:
+#    - vim
+#
+#- name: "Determine if installed vim is {{ vim_version }}"
+#  shell: vim --version | grep "IMproved {{ vim_version }}"
+#  register: vim_version
+#  ignore_errors: True
+#  tags:
+#    - vim
+#
+#- name: Determine if vim built with python3
+#  shell: vim --version | grep "+python3"
+#  register: vim_py3
+#  ignore_errors: True
+#  tags:
+#    - vim
+#
+#- name: Remove old version of vim
+#  become: yes
+#  apt:
+#    name: "{{ item }}"
+#    state: absent
+#    purge: yes
+#    autoremove: yes
+#  when: old_vim_path.stdout == "" or vim_py3.stdout == "" or vim_version.stdout == ""
+#  ignore_errors: yes
+#  loop:
+#    - vim
+#    - vim-tiny
+#    - vim-common
+#    - vim-gui-common
+#    - vim-nox
+#  tags:
+#    - vim
+#
+#- name: Pull down the vim source code
+#  git:
+#    repo: 'https://github.com/vim/vim.git'
+#    dest: "{{ vim_source_dir }}"
+#    clone: yes
+#    update: yes
+#  when: old_vim_path.stdout == "" or vim_py3.stdout == "" or vim_version.stdout == ""
+#  tags:
+#    - vim
+#
+#- name: Make the vim shared directory
+#  become: yes
+#  file:
+#    path: "{{ vim_bin_dir }}"
+#    state: directory
+#    mode: '0755'
+#  tags:
+#    - vim
+#
+#- name: Configure the vim directory for a build
+#  shell: |
+#    ./configure --with-features=huge \
+#      --enable-multibyte \
+#      --enable-rubyinterp=yes \
+#      --enable-python3interp=yes \
+#      --with-python3-config-dir=$(python3-config --configdir) \
+#      --enable-perlinterp=yes \
+#      --enable-luainterp=yes \
+#      --enable-gui=gtk2 \
+#      --enable-cscope \
+#      --prefix=/usr/local
+#  when: old_vim_path.stdout == "" or vim_py3.stdout == "" or vim_version.stdout == ""
+#  args:
+#    chdir: "{{ vim_source_dir }}"
+#  tags:
+#    - vim
+#
+#- name: Make vim
+#  become: yes
+#  shell: "make VIMRUNTIMEDIR={{ vim_bin_dir }}"
+#  when: old_vim_path.stdout == "" or vim_py3.stdout == "" or vim_version.stdout == ""
+#  args:
+#    chdir: "{{ vim_source_dir }}"
+#  tags:
+#    - vim
+#
+#- name: Install vim
+#  become: yes
+#  shell: "make install"
+#  when: old_vim_path.stdout == "" or vim_py3.stdout == "" or vim_version.stdout == ""
+#  args:
+#    chdir: "{{ vim_source_dir }}"
+#  tags:
+#    - vim
+#
+#- name: Remove the vim source from your computer
+#  become: yes
+#  when: old_vim_path.stdout == "" or vim_py3.stdout == "" or vim_version.stdout == ""
+#  file:
+#    path: "{{ vim_source_dir }}"
+#    state: absent
+#  tags:
+#    - vim
 
 - include: "{{ role_path }}/tasks/vimrc.yml"
   tags:
