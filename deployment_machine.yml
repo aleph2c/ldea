@@ -1,4 +1,4 @@
 - hosts: deployment_machine
   roles:
     - ansible
-    - vim
+    - nvim

@@ -12,6 +12,7 @@
     state: present
   with_items:
     - "{{ python_required_packages }}"
+  ignore_errors: yes
   tags:
     - nvim
 
@@ -29,14 +30,65 @@
   tags:
     - nvim
 
+- name: Force hardware check if variables not defined
+  set_fact:
+    drive_hardware_check: true
+  when: driver_hardware_check is not defined or is_pi is not defined or is_x86 is not defined
+  tags:
+    - nvim
+
+# roles/test_hardware/tasks/main.yml
+- name: Get stats of /proc/device-tree/model
+  ansible.builtin.stat:
+    path: /proc/device-tree/model
+  register: pi_device_tree
+  when: drive_hardware_check
+  tags:
+    - nvim
+
+- name: set_fact is_x86 to False
+  set_fact:
+    is_x86: False
+  when: drive_hardware_check
+  tags:
+    - nvim
+
+- name: set_fact is_pi to False
+  set_fact:
+    is_pi: False
+  when: drive_hardware_check
+  tags:
+    - nvim
+
+- name: set_fact is_x86 to True if /proc/device-tree/model does not exist
+  set_fact:
+    is_x86: True
+  when: not pi_device_tree.stat['exists'] and drive_hardware_check
+  tags:
+    - nvim
+
+- name: set_fact is_pi to True if /proc/device-tree/model exists
+  set_fact:
+    is_pi: True
+  when: pi_device_tree.stat['exists'] and drive_hardware_check
+  tags:
+    - nvim
+
+- name: Testing to see if test-hardware play is hit
+  ansible.builtin.debug:
+    msg: "is_pi: {{ is_pi }}, is_x86: {{ is_x86 }}"
+  tags:
+    - nvim
+
 - block:
   - name: Add neovim ppa
     apt_repository:
       repo: "{{ neovim_ppa }}"
       state: present
-    when: ansible_os_family == "Debian"
+    ignore_errors: yes
+    when: ansible_os_family == "Debian" and is_pi == false
 
-  - name: Install neovim from ppa
+  - name: Install neovim
     apt:
       name: "{{ neovim_name }}"
       state: "{{ neovim_install_state }}"
@@ -78,10 +130,8 @@
 
 # This will install all of the required vim plugins
 - name: Have plugged plugin pull down all required nvim packages
-  shell: 'nvim "+silent! +PlugInstall!" +qall'
-  # Thank you to Eddie Staniloiu for this help
-  args:
-    stdin: "\n"
+  command: nvim "+silent! PlugInstall!" +qall!
   tags:
     - nvim
+    - here
 
