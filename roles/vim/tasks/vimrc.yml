@@ -121,6 +121,7 @@
   args:
     chdir: "~/.vim/plugged/YouCompleteMe"
   when: ycm.stat.exists == False
+  ignore_errors: yes
   tags:
     - vim
     - vimrc

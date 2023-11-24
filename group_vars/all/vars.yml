@@ -8,10 +8,10 @@ vimrc_repo: "git@github.com:aleph2c/.vim.git"
 tmuxc_repo: "git@github.com:aleph2c/tmux.conf.git"
 pdbrc_repo: "git@github.com:aleph2c/pdb.conf.git"
 
-vim_version: "8.2"
+vim_version: "9.0"
 vim_source_dir: "/tmp/vim"
-vim_condensed_version: "82"
+vim_condensed_version: "90"
 vim_share_dir: "/usr/local/share"
-vim_bin_dir: "/usr/local/share/vim/vim82"
+vim_bin_dir: "/usr/local/share/vim/vim90"
 
 
