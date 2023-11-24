@@ -1,0 +1,87 @@
+---
+
+- debug:
+    msg: installing nvim
+  tags:
+    - nvim
+
+- name: Install nvim python dependencies
+  become: yes
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "{{ python_required_packages }}"
+  tags:
+    - nvim
+
+# install ycm dependencies
+- block:
+  - name: Install you complete me dependencies
+    apt:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - "{{ ycm_packages }}"
+
+  become: true
+  become_user: root
+  tags:
+    - nvim
+
+- block:
+  - name: Add neovim ppa
+    apt_repository:
+      repo: "{{ neovim_ppa }}"
+      state: present
+    when: ansible_os_family == "Debian"
+
+  - name: Install neovim from ppa
+    apt:
+      name: "{{ neovim_name }}"
+      state: "{{ neovim_install_state }}"
+  become: yes
+  become_user: root
+
+  tags:
+    - nvim
+
+- name: Install the python neovim plugin
+  pip:
+    name: neovim
+    executable: "{{ pip3_name }}"
+    state: "{{ neovim_install_state }}"
+    extra_args: --user
+  tags:
+    - nvim
+
+- name: Pull down the vim source code
+  git:
+    repo: "{{ neovim_init_repo }}"
+    dest: "{{ neovim_config_dir }}"
+    clone: yes
+    update: yes
+  tags:
+    - nvim
+
+- block:
+    - name: Make "{{ neovim_config_dir }}/autoload" directory
+      file: path="{{ neovim_config_dir }}/autoload" state=directory
+
+    - name: Install vim-plug
+      get_url:
+        url: https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+        dest: "{{ neovim_config_dir }}/autoload/plug.vim"
+        force: yes
+  tags:
+    - nvim
+
+# This will install all of the required vim plugins
+- name: Have plugged plugin pull down all required nvim packages
+  shell: 'nvim "+silent! +PlugInstall!" +qall'
+  # Thank you to Eddie Staniloiu for this help
+  args:
+    stdin: "\n"
+  tags:
+    - nvim
+

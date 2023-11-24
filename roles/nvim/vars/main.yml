@@ -1,0 +1,29 @@
+---
+
+neovim_name: neovim
+neovim_ppa: ppa:neovim-ppa/unstable
+config_dir: "/home/{{ user }}/.config/"
+neovim_config_dir: "{{ config_dir }}/nvim"
+
+neovim_init_repo: "git@github.com:aleph2c/init.vim.git"
+
+# Whether or not to install or remove neovim
+# choices: [ present, absent, latest ]
+neovim_install_state: present
+
+# Whether or not to configure or remove configuration
+# choices: [ present, absent ]
+neovim_configuration_state: present
+
+# common required packages for python support
+python_required_packages:
+    - software-properties-common
+    - python3-dev
+    - python3-pip
+
+pip3_name: pip3
+
+# you complete me
+ycm_packages:
+    - build-essential
+    - cmake

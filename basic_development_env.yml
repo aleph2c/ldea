@@ -4,5 +4,5 @@
   roles:
     - git
     - tmux
-    - vim
-    - bashrc
+    - nvim
+#    - bashrc

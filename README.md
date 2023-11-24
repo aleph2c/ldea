@@ -96,6 +96,15 @@ ssh-copy-id pi@10.0.0.22
 
 ```
 
+If you are running in the WSL, start sshd:
+
+```
+sudo service ssh start
+ssh <username>@127.0.0.1
+# confirm the connection, then
+exit
+```
+
 Update your ``group_vars/all`` file with the correct user, group, vimrc repo,
 tmux configuration repo and .pdb configuration repo.
 
