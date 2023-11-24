@@ -98,12 +98,15 @@
   tags:
     - nvim
 
-- name: Install the python neovim plugin
+- name: Install the required pip packages to support python in nvim
   pip:
-    name: neovim
+    name: "{{ item }}"
     executable: "{{ pip3_name }}"
     state: "{{ neovim_install_state }}"
     extra_args: --user
+  with_items:
+    - neovim
+    - pynvim
   tags:
     - nvim
 
@@ -113,6 +116,7 @@
     dest: "{{ neovim_config_dir }}"
     clone: yes
     update: yes
+  ignore_errors: yes
   tags:
     - nvim
 
