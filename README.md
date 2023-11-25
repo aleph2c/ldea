@@ -169,6 +169,7 @@ Once you have logged in, confirm that you can see your forwarded ssh keys:
 ```
 # do this on each machine you want to control
 ssh-add -L
+ssh git@github.com # say yes
 exit
 ```
 
