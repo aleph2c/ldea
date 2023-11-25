@@ -63,7 +63,7 @@ Copy your deployment machine's public keys,  ``cat ~/.ssh/id_rsa.pub``, to your
 entry after the contract/project you are working on. This makes it easy to
 remove this access after you have finished the work.
 
-# Install your Deployment machine using ansible
+# Setting up your Deployment Machine
 
 This procedure will configure ansible for "ssh key forwarding".  This is useful
 if you want to pull down code on other machines, without leaving your
@@ -123,7 +123,7 @@ source ./venv/bin/activate
 When this is done, ansible will work using "ssh key forwarding" and it will have
 access to your encrypted vault files if you choose to use them.
 
-# Pre-deployment Work
+# Pre-Deployment Work
 
 On each machine you want to deploy to, ensure that sshd is installed and
 running, and that it is accepting passwords and it will accept ssh key forwarding.
