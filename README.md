@@ -52,7 +52,7 @@ Ensure you can ssh into this machine without keys:
 ssh-copy-id pi@10.0.0.21
 ```
 
-Confirm access
+Confirm access:
 ```
 ssh <username>@127.0.0.1
 exit
@@ -68,8 +68,8 @@ remove this access after you have finished the work.
 This procedure will configure ansible for "ssh key forwarding".  This is useful
 if you want to pull down code on other machines, without leaving your
 github-accessible ssh keys on those machines.  Ansible is good at automating
-things, so we use ansible to configure its own ansible environment to enable ssh
-key forwarding to the other machines it will control.
+things, so we use ansible to configure its own ansible environment to enable "ssh
+key forwarding" to the other machines it will control.
 
 Update your ``group_vars/all`` file with the correct user, group.
 
@@ -164,7 +164,7 @@ Confirm you can "ssh forward" to each machine.
 ssh -A pi@10.0.0.22
 ```
 
-Once you have logged in you can see your forwarded ssh keys:
+Once you have logged in, confirm that you can see your forwarded ssh keys:
 
 ```
 # do this on each machine you want to control
@@ -175,7 +175,7 @@ exit
 You can now ssh from your deployment machine to each of your other computers,
 without needing a password, and with the option of forwarding your deployment
 machine's ssh keys.  Remember that ssh key forwarding is useful; you can pull
-done code from github on the remote machine as if it were the deployment
+down code from github on the remote machine as if it were the deployment
 machine.  This keeps important keys off those other computers.
 
 Now that you have set things up, you might want to remove the ability for
