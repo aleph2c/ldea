@@ -2,7 +2,7 @@
 
 neovim_name: neovim
 neovim_ppa: ppa:neovim-ppa/unstable
-config_dir: "/home/{{ user }}/.config/"
+config_dir: "/home/{{ user }}/.config"
 neovim_config_dir: "{{ config_dir }}/nvim"
 
 neovim_init_repo: "git@github.com:aleph2c/init.vim.git"
@@ -20,6 +20,8 @@ python_required_packages:
     - software-properties-common
     - python3-dev
     - python3-pip
+    - python3-neovim
+    - python3-pynvim
 
 pip3_name: pip3
 
