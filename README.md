@@ -8,7 +8,7 @@ Install a trusted deployment machine:
   * An ssh forwarding strategy to keep your keys off of your target machines
   * Access to an encrypted vault on the deployment machine (currently not used)
 
-Perform the following on a target(s) from the deployment machine:
+Install the following on a target(s) from the deployment machine:
 
   * Tmux and a customized Tmux configuration
   * Install a custom init.vim
@@ -32,7 +32,7 @@ sudo vim /etc/sshd/sshd_config
 # uncomment PasswordAuthentication
 ```
 
-Restart the sshd:
+Restart the sshd daemon:
 ```
 # in a debian based Linux machine:
 sudo systemctl restart sshd
@@ -60,16 +60,16 @@ exit
 
 Copy your deployment machine's public keys,  ``cat ~/.ssh/id_rsa.pub``, to your
 [github keys](https://github.com/settings/keys).  Make a point of naming the key
-entry after the contract/project you are working on, you will remove this access
-after you have finished the work.
+entry after the contract/project you are working on. This makes it easy to
+remove this access after you have finished the work.
 
 # Install your Deployment machine using ansible
 
 This procedure will configure ansible for "ssh key forwarding".  This is useful
-if you want to pull down code on other machines, without leaving your github
-accessible ssh keys on those machines.  Ansible is good at automating things, so
-we use ansible to configure its own ansible environment to enable ssh key
-forwarding to the other machines it will control.
+if you want to pull down code on other machines, without leaving your
+github-accessible ssh keys on those machines.  Ansible is good at automating
+things, so we use ansible to configure its own ansible environment to enable ssh
+key forwarding to the other machines it will control.
 
 Update your ``group_vars/all`` file with the correct user, group.
 
@@ -79,7 +79,8 @@ git clone git@github.com:aleph2c/ldea.git
 cd ldea
 ```
 
-Create a personal inventory from the personal_example:
+Create a personal inventory from the personal_example (the personal file will be
+ignored by git):
 ```
 cp personal_example personal
 ```
@@ -119,8 +120,8 @@ source ~/.bashrc
 source ./venv/bin/activate
 ```
 
-When this is done, ansible will work using ssh key forwarding and it will be
-able to work with your encrypted vault files if you choose to use them.
+When this is done, ansible will work using "ssh key forwarding" and it will have
+access to your encrypted vault files if you choose to use them.
 
 # Pre-deployment Work
 
@@ -134,9 +135,9 @@ systemctl status sshd
 service ssh status
 ```
 
-On each machine you want to control, edit their sshd config and ensure that
-PasswordAuthentication and AllowForwarding are enabled.  If not, enable them,
-then restart their sshd daemon.
+For each machine you want to control, edit their sshd config and ensure that
+``PasswordAuthentication`` and ``AllowForwarding`` are enabled.  If not, enable
+them, then restart their sshd daemon.
 
 ```
 sudo nano /etc/sshd/sshd_config
@@ -156,14 +157,14 @@ ssh-copy-id pi@10.0.0.22
 
 ```
 
-Confirm you can ssh forward to each machine you want to deploy to.
+Confirm you can "ssh forward" to each machine.
 
 ```
 # do this to each machine you want to control
 ssh -A pi@10.0.0.22
 ```
 
-Once you have logged into the other machine you can see the ssh keys you are using with:
+Once you have logged in you can see your forwarded ssh keys:
 
 ```
 # do this on each machine you want to control
@@ -171,14 +172,15 @@ ssh-add -L
 exit
 ```
 
-You can now ssh from your deployment machine to each of your deployment machines
-without needing a password and with the option of forwarding your deployment
+You can now ssh from your deployment machine to each of your other computers,
+without needing a password, and with the option of forwarding your deployment
 machine's ssh keys.  Remember that ssh key forwarding is useful; you can pull
 done code from github on the remote machine as if it were the deployment
-machine.  This keeps important keys off those remote machines.
+machine.  This keeps important keys off those other computers.
 
-If you want to remove the ability for someone to ssh onto the remove machine
-with a password, log back into it and:
+Now that you have set things up, you might want to remove the ability for
+someone to ssh onto the other computers, with a password.  If this is the case,
+log back into each machine and do the following:
 
 ```
 sudo nano /etc/sshd/sshd_config
