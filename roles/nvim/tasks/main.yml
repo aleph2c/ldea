@@ -5,6 +5,18 @@
   tags:
     - nvim
 
+- name: Install ripgrep and fzf
+  become: yes
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - ripgrep
+    - fzf
+  ignore_errors: yes
+  tags:
+    - nvim
+
 - name: Install nvim python dependencies
   become: yes
   apt:
