@@ -48,22 +48,22 @@
     mode: '0400'
     state: touch
 
-- name: Test to see if github.com keys are defined known_hosts
-  shell: |
-    touch /home/{{user}}/.ssh/known_hosts
-    grep -c 'github.com' /home/{{user}}/.ssh/known_hosts || true
-  register: github_bash
-  args:
-    warn: false
-  tags:
-    - sshd
+      #- name: Test to see if github.com keys are defined known_hosts
+      #  shell: |
+      #    touch /home/{{user}}/.ssh/known_hosts
+      #    grep -c 'github.com' /home/{{user}}/.ssh/known_hosts || true
+      #  register: github_bash
+      #  args:
+      #    warn: false
+      #  tags:
+      #    - sshd
 
-- name: Push the github.com keys into known_hosts
-  shell: |
-    ssh-keyscan github.com >> /home/{{ user }}/.ssh/known_hosts
-  when: github_bash.stdout == '0'
-  tags:
-    - sshd
+      #- name: Push the github.com keys into known_hosts
+      #  shell: |
+      #    ssh-keyscan github.com >> /home/{{ user }}/.ssh/known_hosts
+      #  when: github_bash.stdout == '0'
+      #  tags:
+      #    - sshd
 
 - name: Reboot the machine, forcing ssh to connect with agent forwarding
   become: yes

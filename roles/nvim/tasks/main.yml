@@ -172,6 +172,7 @@
     dest: "{{ root_home }}/.config/nvim"
     state: link
   when: root_home is defined and root_home | length > 0
+  ignore_errors: yes
   tags:
     - nvim
     - root
@@ -180,9 +181,10 @@
   become: true
   ansible.builtin.file:
     src: "/home/{{ user }}/.local/share/nvim/plugged"
-    dest: "{{ root_home }}/.local/share/nvim/plugged"
+    dest: "$HOME/.local/share/nvim/plugged"
     state: link
   when: root_home is defined and root_home | length > 0
+  ignore_errors: yes
   tags:
     - nvim
     - root
