@@ -166,22 +166,11 @@
     - nvim
     - root
 
-- name: Create the .config path for root
-  become: true
-  ansible.builtin.file:
-    path: "{{ root_home }}/.config"
-    state: directory
-    mode: '0755'
-  when: root_home is defined and root_home | length > 0
-  tags:
-    - nvim
-    - root
-
 - name: Create the nvim link for root
   become: true
   ansible.builtin.file:
-    src: "{{ neovim_config_dir }}"
-    dest: "{{ root_home }}/.config/nvim"
+    src: "/home/{{ user }}/.config"
+    dest: "{{ root_home }}/.config"
     state: link
   when: root_home is defined and root_home | length > 0
   ignore_errors: yes
@@ -192,8 +181,8 @@
 - name: Create the nvim link for root
   become: true
   ansible.builtin.file:
-    src: "/home/{{ user }}/.local/share/nvim/plugged"
-    dest: "$HOME/.local/share/nvim/plugged"
+    src: "/home/{{ user }}/.local"
+    dest: "{{ root_home }}/.local"
     state: link
   when: root_home is defined and root_home | length > 0
   ignore_errors: yes
