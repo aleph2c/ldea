@@ -32,6 +32,7 @@
   register: root_path
 
 - name: Create a softlink to the .tmux.conf file for the root user
+  ignore_errors: True
   become: yes
   file:
     src: /home/{{ user }}/.tmux/.tmux.conf
