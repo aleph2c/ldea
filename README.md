@@ -9,7 +9,7 @@ Install a trusted deployment machine:
   * The vault plumbing the other ansible repos rely on: the deployment-machine
     playbook exports ``ANSIBLE_VAULT_PASSWORD_FILE=./.vault_pass`` (relative, so
     each repo's own committed script is used from its root); ``VAULT_PASSWORD``
-    itself lives in ``~/.bashrc.secrets``. ldea itself has nothing
+    itself lives in ``~/.config/bash/secrets.sh``. ldea itself has nothing
     encrypted; ``missionloops_ansible`` does, and its vaults open with that one
     password
 
@@ -25,9 +25,10 @@ Install the following on a target(s) from the deployment machine:
   * Customize the python environment
   * Customize the python debugger
   * Customize your .bashrc file, and create the two files it sources when they
-    are missing: ``~/.bashrc.local`` (this machine only) and ``~/.bashrc.secrets``
-    (mode 600; holds ``VAULT_PASSWORD`` and any API keys; never committed or
-    backed up)
+    are missing, under the XDG config directory: ``~/.config/bash/local.sh``
+    (this machine only) and ``~/.config/bash/secrets.sh`` (mode 600; holds a
+    ``VAULT_PASSWORD`` placeholder you overwrite with the real one, plus any API
+    keys; never committed or backed up)
   * Install and then fix Umlet ('umlet' will work from command line)
   * Install a custom umlet template
 

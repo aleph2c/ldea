@@ -1,10 +1,12 @@
 ---
 # roles/bashrc/tasks/main.yml
 #
-# ~/.bashrc is shared across machines. Two side files hold what cannot be:
-#   ~/.bashrc.local     this machine only (paths, aliases, quirks)
-#   ~/.bashrc.secrets   keys and passwords, mode 600, never backed up
-# Both are created here only if absent and never rewritten afterwards.
+# bash itself only reads ~/.bashrc, so that file stays in $HOME and is meant
+# to be shared across machines. Everything it must not share lives under the
+# XDG config directory:
+#   ~/.config/bash/local.sh     this machine only (paths, aliases, quirks)
+#   ~/.config/bash/secrets.sh   keys and passwords; mode 600; never backed up
+# Both are created only if absent and never rewritten afterwards.
 
 - name: Ensure the ~/.local directory exists
   file:
@@ -13,9 +15,17 @@
   tags:
     - bashrc
 
-- name: Create ~/.bashrc.local if it does not exist
+- name: Ensure ~/.config/bash exists and is private
+  file:
+    path: "{{ bashrc_home }}/.config/bash"
+    state: directory
+    mode: '0700'
+  tags:
+    - bashrc
+
+- name: Create ~/.config/bash/local.sh if it does not exist
   copy:
-    dest: "{{ bashrc_home }}/.bashrc.local"
+    dest: "{{ bashrc_home }}/.config/bash/local.sh"
     force: no
     mode: '0644'
     content: |
@@ -23,22 +33,27 @@
   tags:
     - bashrc
 
-- name: Create ~/.bashrc.secrets if it does not exist
+# The placeholder is deliberate: a fresh machine cannot open any ansible vault
+# until the user overwrites it with the real password, and the file tells them.
+- name: Create ~/.config/bash/secrets.sh if it does not exist
   copy:
-    dest: "{{ bashrc_home }}/.bashrc.secrets"
+    dest: "{{ bashrc_home }}/.config/bash/secrets.sh"
     force: no
     mode: '0600'
     content: |
-      # Secrets only. Sourced by ~/.bashrc; never committed, never backed up.
+      # Secrets only. Sourced by ~/.bashrc; mode 600; never committed, never backed up.
       # One line per secret: export NAME=value
+      # VAULT_PASSWORD is the one password behind every ansible vault (missionloops_ansible
+      # and any other repo with a .vault_pass script). ldea writes a placeholder here;
+      # overwrite it with the real password to use those vaults from this machine.
 
       export VAULT_PASSWORD="replace me, the only copy of the vault password lives here"
   tags:
     - bashrc
 
-- name: Keep ~/.bashrc.secrets private even if it already existed
+- name: Keep ~/.config/bash/secrets.sh private even if it already existed
   file:
-    path: "{{ bashrc_home }}/.bashrc.secrets"
+    path: "{{ bashrc_home }}/.config/bash/secrets.sh"
     mode: '0600'
   tags:
     - bashrc
@@ -55,7 +70,9 @@
     - '[ -f /usr/share/doc/fzf/examples/completion.bash ] && source /usr/share/doc/fzf/examples/completion.bash'
     - 'git config --global alias.graph "log --graph --abbrev-commit --decorate --oneline --all"'
     - "alias activate='source ./venv/bin/activate'"
-    - '[ -f ~/.bashrc.local ]   && source ~/.bashrc.local'
-    - '[ -f ~/.bashrc.secrets ] && source ~/.bashrc.secrets'
+    - '_bash_cfg="${XDG_CONFIG_HOME:-$HOME/.config}/bash"'
+    - '[ -f "$_bash_cfg/local.sh" ]   && source "$_bash_cfg/local.sh"'
+    - '[ -f "$_bash_cfg/secrets.sh" ] && source "$_bash_cfg/secrets.sh"'
+    - 'unset _bash_cfg'
   tags:
     - bashrc
