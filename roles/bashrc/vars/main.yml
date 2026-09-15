@@ -1,0 +1,6 @@
+---
+# roles/bashrc/vars/main.yml
+# One explicit home for every path in this role, so modules and action plugins
+# cannot disagree about what ~ means (they do under a local connection with
+# HOME overridden, which is how the role is tested).
+bashrc_home: "{{ ansible_facts['env']['HOME'] }}"

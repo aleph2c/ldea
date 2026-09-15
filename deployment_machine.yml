@@ -3,5 +3,6 @@
     - import_tasks: tasks/become_exe.yml
   roles:
     - git
+    - bashrc
     - ansible
     - nvim

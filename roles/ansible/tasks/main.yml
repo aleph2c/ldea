@@ -29,28 +29,12 @@
   tags:
     - ansible
 
-- name: Test to see if the ansible vault password is in .bashrc file
-  shell:
-    grep -c "^export VAULT_PASSWORD=" ~/.bashrc || true
-  register: vault_password
-  changed_when: false
-  tags:
-    - ansible
-
 - name: Install specified requirements in indicated venv
   shell:
     cmd: "{{playbook_dir}}/venv/bin/pip install -r {{playbook_dir}}/requirements.txt"
   args:
     chdir: "{{ playbook_dir }}/venv"
     executable: /usr/bin/bash
-  tags:
-    - ansible
-
-- name: If VAULT_PASSWORD not defined add a place holder
-  lineinfile:
-    path: ~/.bashrc
-    line: 'export VAULT_PASSWORD="replace me, the only copy of the vault password lives here"'
-  when: vault_password.stdout == '0'
   tags:
     - ansible
 

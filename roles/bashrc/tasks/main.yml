@@ -1,15 +1,51 @@
 ---
-# roles/template/tasks/main.yml
+# roles/bashrc/tasks/main.yml
+#
+# ~/.bashrc is shared across machines. Two side files hold what cannot be:
+#   ~/.bashrc.local     this machine only (paths, aliases, quirks)
+#   ~/.bashrc.secrets   keys and passwords, mode 600, never backed up
+# Both are created here only if absent and never rewritten afterwards.
+
 - name: Ensure the ~/.local directory exists
   file:
-    path: $HOME/.local
+    path: "{{ bashrc_home }}/.local"
     state: directory
+  tags:
+    - bashrc
+
+- name: Create ~/.bashrc.local if it does not exist
+  copy:
+    dest: "{{ bashrc_home }}/.bashrc.local"
+    force: no
+    mode: '0644'
+    content: |
+      # This machine only: paths, aliases, quirks. Sourced by ~/.bashrc; not in git.
+  tags:
+    - bashrc
+
+- name: Create ~/.bashrc.secrets if it does not exist
+  copy:
+    dest: "{{ bashrc_home }}/.bashrc.secrets"
+    force: no
+    mode: '0600'
+    content: |
+      # Secrets only. Sourced by ~/.bashrc; never committed, never backed up.
+      # One line per secret: export NAME=value
+
+      export VAULT_PASSWORD="replace me, the only copy of the vault password lives here"
+  tags:
+    - bashrc
+
+- name: Keep ~/.bashrc.secrets private even if it already existed
+  file:
+    path: "{{ bashrc_home }}/.bashrc.secrets"
+    mode: '0600'
   tags:
     - bashrc
 
 - name: Add the ldea lines to .bashrc
   lineinfile:
-    path: ~/.bashrc
+    path: "{{ bashrc_home }}/.bashrc"
     line: "{{ item }}"
   loop:
     - PROMPT_COMMAND='stty sane'
@@ -19,7 +55,7 @@
     - '[ -f /usr/share/doc/fzf/examples/completion.bash ] && source /usr/share/doc/fzf/examples/completion.bash'
     - 'git config --global alias.graph "log --graph --abbrev-commit --decorate --oneline --all"'
     - "alias activate='source ./venv/bin/activate'"
+    - '[ -f ~/.bashrc.local ]   && source ~/.bashrc.local'
+    - '[ -f ~/.bashrc.secrets ] && source ~/.bashrc.secrets'
   tags:
     - bashrc
-
-
