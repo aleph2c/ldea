@@ -37,8 +37,6 @@
   tags:
     - ansible
     - shell
-  tags:
-    - ansible
 
 - name: Install specified requirements in indicated venv
   shell:
