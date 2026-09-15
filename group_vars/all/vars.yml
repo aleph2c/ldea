@@ -1,17 +1,12 @@
 ---
-ansible_python_interpreter: "auto"
-
+# Always the system python: it has the apt bindings the apt module needs.
+# "auto" picked a venv python when a venv was active on a local connection.
+ansible_python_interpreter: /usr/bin/python3
+# The account to configure: whoever ansible logged in as. Override per host
+# or group in the inventory (user=pi) when the target account differs.
+user: "{{ ansible_facts['user_id'] }}"
+group: "{{ ansible_facts['user_id'] }}"
 git_user: Scott Volk
 git_email: scott@13down.io
-
-vimrc_repo: "git@github.com:aleph2c/.vim.git"
 tmuxc_repo: "git@github.com:aleph2c/tmux.conf.git"
 pdbrc_repo: "git@github.com:aleph2c/pdb.conf.git"
-
-vim_version: "9.0"
-vim_source_dir: "/tmp/vim"
-vim_condensed_version: "90"
-vim_share_dir: "/usr/local/share"
-vim_bin_dir: "/usr/local/share/vim/vim90"
-
-

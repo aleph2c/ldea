@@ -1,4 +1,4 @@
 ---
-# roles/template/meta/main.yml
-dependencies:
-  - role: git
+# roles/nvim/meta/main.yml
+# git is listed ahead of this role in the playbooks; no dependency needed.
+dependencies: []

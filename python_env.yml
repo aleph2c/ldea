@@ -1,5 +1,7 @@
 ---
 - hosts: all
+  pre_tasks:
+    - import_tasks: tasks/become_exe.yml
   roles:
     - pdb
     - pip

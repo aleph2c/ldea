@@ -1,6 +1,8 @@
 ---
 # basic_development_env.yml (just the development environment)
 - hosts: targets
+  pre_tasks:
+    - import_tasks: tasks/become_exe.yml
   roles:
     - git
     - tmux

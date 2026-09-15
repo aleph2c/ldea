@@ -6,18 +6,37 @@ Install a trusted deployment machine:
 
   * A deployment machine with access to github
   * An ssh forwarding strategy to keep your keys off of your target machines
-  * Access to an encrypted vault on the deployment machine (currently not used)
+  * Access to an encrypted vault: the deployment-machine playbook points
+    ``ANSIBLE_VAULT_PASSWORD_FILE`` at ``.vault_pass``, a committed script that
+    prints ``VAULT_PASSWORD`` from that machine's ``~/.bashrc``, so nothing
+    secret is ever committed and machines without a vault are unaffected
 
 Install the following on a target(s) from the deployment machine:
 
   * Tmux and a customized Tmux configuration
-  * Install a custom init.vim
-  * Use the Plugin manager to install nvim plugins
+  * Neovim, a custom init.vim, and its plugins via vim-plug
+  * The tools that init.vim expects: ripgrep and fzf (search and pickers),
+    universal-ctags (jump to definition), glow (markdown preview), xclip
+    (clipboard) and python3-pynvim (the Python provider)
+  * A git template so every repo cloned or init'ed afterwards rebuilds its
+    ctags index on commit, merge, checkout and rebase
   * Customize the python environment
   * Customize the python debugger
   * Customize your .bashrc file
   * Install and then fix Umlet ('umlet' will work from command line)
   * Install a custom umlet template
+
+# Playbooks and roles
+
+| Playbook | Runs on | Roles |
+|---|---|---|
+| ``basic_development_env.yml`` | targets | git, tmux, nvim, bashrc |
+| ``python_env.yml`` | all | pdb, pip |
+| ``umlet.yml`` | all | umlet (pulls in java and pip) |
+| ``site.yml`` | | the three above, in that order |
+| ``deployment_machine.yml`` | deployment_machine | git, ansible (pulls in ssh and redis), nvim |
+
+The ``vim`` role, which builds vim 9 from source, is not run by any playbook.
 
 # Initial setup of Deployment Machine
 
@@ -28,7 +47,7 @@ ssh.
 On the deployment machine ensure your sshd accepts passwords.
 ```
 sudo apt-get install vim
-sudo vim /etc/sshd/sshd_config
+sudo vim /etc/ssh/sshd_config
 # uncomment PasswordAuthentication
 ```
 
@@ -104,7 +123,7 @@ Setup the virtual environment:
 ```
 # in ldea
 python3 -m venv venv
-source ./venv/bin/active
+source ./venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
@@ -113,6 +132,10 @@ Setup your deployment machine:
 ```
 ansible-playbook -i personal deployment_machine.yml -K
 ```
+
+The first run of this playbook reboots the machine if ``AllowAgentForwarding``
+was not already enabled in its sshd configuration. Expect it, and re-run the
+playbook afterwards. Later runs do not reboot.
 
 Re-initialize bash and restart your venv.
 ```
@@ -124,6 +147,28 @@ When this is done, ansible will work using "ssh key forwarding" and it will have
 access to your encrypted vault files if you choose to use them.
 
 # Pre-Deployment Work
+
+ldea configures an account; it does not create one. Getting a new target from
+a fresh install to its first ldea run:
+
+1. Install Debian or Ubuntu. The installer's account will do, or make one:
+   ```
+   sudo adduser scott
+   sudo usermod -aG sudo scott
+   ```
+2. Make sure sshd is on the target: ``sudo apt install openssh-server``.
+3. Follow the sshd steps below (password login on for now, agent forwarding
+   on), then ``ssh-copy-id`` from the deployment machine.
+4. Put the target in ``personal`` and name the account, unless it matches your
+   login on the deployment machine:
+   ```
+   [targets]
+   10.0.0.22 ansible_user=scott
+   ```
+5. Run ``ansible-playbook -i personal basic_development_env.yml -K``. The
+   ``-K`` asks for that account's sudo password.
+6. Optionally turn password login back off, as described at the end of this
+   section.
 
 On each machine you want to deploy to, ensure that sshd is installed and
 running, and that it is accepting passwords and it will accept ssh key forwarding.
@@ -140,8 +185,8 @@ For each machine you want to control, edit their sshd config and ensure that
 them, then restart their sshd daemon.
 
 ```
-sudo nano /etc/sshd/sshd_config
-# uncomment PasswordAuthentication and AllowForwarding
+sudo nano /etc/ssh/sshd_config
+# uncomment PasswordAuthentication and AllowAgentForwarding
 sudo systemctl restart sshd
 # or on WSL
 service ssh restart
@@ -184,7 +229,7 @@ someone to ssh onto the other computers, with a password.  If this is the case,
 log back into each machine and do the following:
 
 ```
-sudo nano /etc/sshd/sshd_config
+sudo nano /etc/ssh/sshd_config
 # uncomment PasswordAuthentication
 sudo systemctl restart sshd
 # or on WSL
@@ -194,13 +239,22 @@ exit
 
 # Deployment
 
-Update your ``group_vars/all`` file with the correct user, group, vimrc repo,
-nvim repo, tmux configuration repo and .pdb configuration repo.
+``group_vars/all/vars.yml`` holds the git identity and the tmux and pdb
+configuration repos. The account to configure defaults to whoever ansible logs
+in as; set ``user=`` in the inventory or on the command line to override it.
 
-To only install tmux, nvim, your init.vim, it's plugins:
+To install tmux, nvim, its configuration and plugins, and the git hooks:
 
 ```
-ansible-playbook -i personal basic_development_env.yml
+ansible-playbook -i personal basic_development_env.yml -K
+```
+
+To configure the machine you are sitting at, no sshd needed, give it a local
+connection in the inventory (see ``personal_example``):
+
+```
+[targets]
+127.0.0.1 ansible_connection=local
 ```
 
 If you want to specify the user on the command line:
@@ -208,3 +262,25 @@ If you want to specify the user on the command line:
 ```
 ansible-playbook -i personal basic_development_env.yml -K -e "user=bob"
 ```
+
+Existing clones do not pick up the git template hooks automatically; run
+``git init`` once inside each to copy them in.
+
+# Checking a run
+
+Every task is safe to repeat: packages, clones, symlinks and ``.bashrc`` lines
+all converge on the same state. A second run is therefore harmless, but it will
+not yet report ``changed=0``, because a few tasks are shell probes or ``touch``
+operations that ansible cannot see through. Until those are converted, judge a
+run by the ``failed`` count and by what the machine does afterwards:
+
+```
+nvim                     # opens with plugins, no startup messages
+nvim +checkhealth        # Python 3 provider OK
+tmux                     # custom configuration in force
+git config --get init.templatedir   # ~/.git_template
+```
+
+The nvim role pulls the init.vim repository with ``update: yes``. If the
+checkout on the target has local modifications, that task fails rather than
+overwrite them; commit or stash them and re-run.

@@ -6,24 +6,21 @@
   loop:
     - 'eval $(ssh-agent)'
     - 'ssh-add ~/.ssh/id_rsa'
-    - 'export ANSIBLE_VAULT_PASSWORD_FILE=./.vault_pass'
+
+- name: Point ansible at the vault password script (absolute path, replaces any older line)
+  lineinfile:
+    path: ~/.bashrc
+    regexp: '^export ANSIBLE_VAULT_PASSWORD_FILE='
+    line: 'export ANSIBLE_VAULT_PASSWORD_FILE={{ playbook_dir }}/.vault_pass'
   tags:
     - ansible
 
 - name: Test to see if the ansible vault password is in .bashrc file
   shell:
-    grep -c "VAULT_PASSWORD" ~/.bashrc || true
+    grep -c "^export VAULT_PASSWORD=" ~/.bashrc || true
   register: vault_password
   tags:
     - ansible
-
-- name: Debug bullshit ansible vars
-  debug:
-    msg: "playbook_dir: {{playbook_dir}}"
-
-- name: Debug bullshit ansible vars
-  debug:
-    msg: "ansible_dir: {{ansible_dir}}"
 
 - name: Install specified requirements in indicated venv
   shell:
@@ -37,7 +34,7 @@
 - name: If VAULT_PASSWORD not defined add a place holder
   lineinfile:
     path: ~/.bashrc
-    line: export VAULT_PASSWORD="this will be the password to your vault"
+    line: 'export VAULT_PASSWORD="replace me, the only copy of the vault password lives here"'
   when: vault_password.stdout == '0'
   tags:
     - ansible
@@ -65,18 +62,6 @@
     mode: '0644'
     owner: root
     group: root
-  tags:
-    - ansible
-
-- name: Set the git user.name
-  shell:
-    "git config --global user.name {{ git_user }}"
-  tags:
-    - ansible
-
-- name: Set the git email address
-  shell:
-    "git config --global user.email {{ git_email }}"
   tags:
     - ansible
 

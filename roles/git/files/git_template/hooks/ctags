@@ -1,0 +1,14 @@
+#!/bin/sh
+# Rebuild the ctags index for this repo into .git/tags.
+# Installed from ~/.git_template by `git init` / `git clone`; called in the
+# background by the post-commit, post-merge, post-checkout and post-rewrite
+# hooks. Indexes tracked files plus untracked-but-not-ignored ones, so venv/
+# and node_modules/ never get in, and writes to a temp name then renames so
+# an editor never reads a half-written file.
+set -e
+PATH="/usr/local/bin:$PATH"
+dir="$(git rev-parse --git-dir)"
+trap 'rm -f "$dir/$$.tags"' EXIT
+git ls-files --cached --others --exclude-standard \
+  | ctags --tag-relative=yes -L - -f "$dir/$$.tags" 2>/dev/null
+mv "$dir/$$.tags" "$dir/tags"

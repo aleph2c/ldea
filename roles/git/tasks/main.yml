@@ -1,10 +1,40 @@
 ---
-# roles/vim/tasks/main.yml
+# roles/git/tasks/main.yml
 - name: Install git
   become: yes
   apt:
     name: git
     state: present
   tags:
-    - github
+    - git
 
+- name: Set the git identity
+  community.general.git_config:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    scope: global
+  loop:
+    - { name: user.name,  value: "{{ git_user }}" }
+    - { name: user.email, value: "{{ git_email }}" }
+  tags:
+    - git
+
+# ~/.git_template/hooks: post-commit, post-merge, post-checkout and
+# post-rewrite each rebuild .git/tags with ctags in the background, so
+# Ctrl-] in nvim always has a fresh index. Copied into every repo that is
+# cloned or init'ed after this runs; existing clones need one `git init`.
+- name: Install the git template with the ctags hooks
+  copy:
+    src: git_template/
+    dest: "/home/{{ user }}/.git_template/"
+    mode: preserve
+  tags:
+    - git
+
+- name: Point new clones and inits at the template
+  community.general.git_config:
+    name: init.templatedir
+    value: "~/.git_template"
+    scope: global
+  tags:
+    - git

@@ -1,146 +1,81 @@
 ---
+# roles/nvim/tasks/main.yml
+#
+# neovim plus everything init.vim expects to find on the machine:
+#   ripgrep + fzf      ,g ,gg ,/ ,r Ctrl-p ;   search and pickers
+#   universal-ctags    Ctrl-] and the ~/.git_template hooks (git role)
+#   xclip              system clipboard
+#   python3-pynvim     the Python provider (UltiSnips, far.vim)
+#   glow               ,g in markdown buffers
 
-- debug:
-    msg: installing nvim
-  tags:
-    - nvim
-
-- name: Install ripgrep and fzf
+- name: Install neovim and the tools its configuration expects
   become: yes
   apt:
-    name: "{{ item }}"
+    name:
+      - neovim
+      - ripgrep
+      - fzf
+      - universal-ctags
+      - xclip
+      - python3-pynvim
     state: present
-  with_items:
-    - ripgrep
-    - fzf
-  ignore_errors: yes
+    update_cache: yes
+    cache_valid_time: 3600
   tags:
     - nvim
 
-- name: Install nvim python dependencies
+- name: Download glow from its GitHub release
+  become: yes
+  get_url:
+    url: "https://github.com/charmbracelet/glow/releases/download/v{{ glow_version }}/glow_{{ glow_version }}_{{ glow_arch[ansible_facts['architecture']] }}.deb"
+    dest: "/tmp/glow_{{ glow_version }}.deb"
+    mode: '0644'
+  when: ansible_facts['architecture'] in glow_arch
+  tags:
+    - nvim
+
+- name: Install glow
   become: yes
   apt:
-    name: "{{ item }}"
-    state: present
-  with_items:
-    - "{{ python_required_packages }}"
-  ignore_errors: yes
+    deb: "/tmp/glow_{{ glow_version }}.deb"
+  when: ansible_facts['architecture'] in glow_arch
   tags:
     - nvim
 
-# install ycm dependencies
-- block:
-  - name: Install you complete me dependencies
-    apt:
-      name: "{{ item }}"
-      state: present
-    with_items:
-      - "{{ ycm_packages }}"
-
-  become: true
-  become_user: root
-  tags:
-    - nvim
-
-- name: Force hardware check if variables not defined
-  set_fact:
-    drive_hardware_check: true
-  when: driver_hardware_check is not defined or is_pi is not defined or is_x86 is not defined
-  tags:
-    - nvim
-
-# roles/test_hardware/tasks/main.yml
-- name: Get stats of /proc/device-tree/model
-  ansible.builtin.stat:
-    path: /proc/device-tree/model
-  register: pi_device_tree
-  when: drive_hardware_check
-  tags:
-    - nvim
-
-- name: set_fact is_x86 to False
-  set_fact:
-    is_x86: False
-  when: drive_hardware_check
-  tags:
-    - nvim
-
-- name: set_fact is_pi to False
-  set_fact:
-    is_pi: False
-  when: drive_hardware_check
-  tags:
-    - nvim
-
-- name: set_fact is_x86 to True if /proc/device-tree/model does not exist
-  set_fact:
-    is_x86: True
-  when: not pi_device_tree.stat['exists'] and drive_hardware_check
-  tags:
-    - nvim
-
-- name: set_fact is_pi to True if /proc/device-tree/model exists
-  set_fact:
-    is_pi: True
-  when: pi_device_tree.stat['exists'] and drive_hardware_check
-  tags:
-    - nvim
-
-- name: Testing to see if test-hardware play is hit
-  ansible.builtin.debug:
-    msg: "is_pi: {{ is_pi }}, is_x86: {{ is_x86 }}"
-  tags:
-    - nvim
-
-- block:
-  - name: Install neovim
-    apt:
-      name: "{{ neovim_name }}"
-      state: "{{ neovim_install_state }}"
-
-  - name: use nvim for editor
-    alternatives:
-      name: editor
-      path: /usr/bin/nvim
-
-    alternatives:
-      name: vi
-      path: /usr/bin/nvim
-
+- name: Use nvim as the system editor
   become: yes
-  become_user: root
-
+  alternatives:
+    name: editor
+    path: /usr/bin/nvim
   tags:
     - nvim
 
+- name: Use nvim as vi
+  become: yes
+  alternatives:
+    name: vi
+    path: /usr/bin/nvim
+  tags:
+    - nvim
+
+# The configuration repo tracks autoload/plug.vim itself, so vim-plug needs
+# no separate download.
 - name: Pull down the init.vim configuration from github
   git:
     repo: "{{ neovim_init_repo }}"
     dest: "{{ neovim_config_dir }}"
-    clone: yes
     update: yes
-  ignore_errors: yes
   tags:
     - nvim
 
-- block:
-    - name: Make "{{ neovim_config_dir }}autoload" directory
-      file: path="{{ neovim_config_dir }}autoload" state=directory
-
-    - name: Install vim-plug
-      get_url:
-        url: https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-        dest: "{{ neovim_config_dir }}/autoload/plug.vim"
-        force: yes
+- name: Install the nvim plugins
+  command: nvim --headless "+silent! PlugInstall!" +qall!
+  changed_when: false
   tags:
     - nvim
 
-# This will install all of the required vim plugins
-- name: Have plugged plugin pull down all required nvim packages
-  command: nvim "+silent! PlugInstall!" +qall!
-  tags:
-    - nvim
-
+# Root gets the same editor: its nvim config and plugin directories are
+# symlinks into the user's, unless root already has real ones of its own.
 - name: Get the home path for root
   become: true
   ansible.builtin.getent:
@@ -154,38 +89,45 @@
 - name: Set root home path variable
   set_fact:
     root_home: "{{ root_getent.ansible_facts.getent_passwd['root'][4] }}"
-  when: root_getent.ansible_facts.getent_passwd['root'] is defined
   tags:
     - nvim
     - root
 
-- name: Did we get the home drive of root?
-  debug:
-    msg: "Root home directory is {{ root_home }}"
-  tags:
-    - nvim
-    - root
-
-- name: Create the nvim link for root
+- name: Root's config and data directories exist
   become: true
   ansible.builtin.file:
-    src: "/home/{{ user }}/.config"
-    dest: "{{ root_home }}/.config"
-    state: link
-  when: root_home is defined and root_home | length > 0
-  ignore_errors: yes
+    path: "{{ root_home }}/{{ item }}"
+    state: directory
+    mode: '0700'
+  loop:
+    - .config
+    - .local/share
   tags:
     - nvim
     - root
 
-- name: Create the nvim link for root
+- name: See whether root already has nvim directories of its own
+  become: true
+  ansible.builtin.stat:
+    path: "{{ root_home }}/{{ item }}"
+  loop:
+    - .config/nvim
+    - .local/share/nvim
+  register: root_nvim_dirs
+  tags:
+    - nvim
+    - root
+
+- name: Give root the same nvim configuration and plugins
   become: true
   ansible.builtin.file:
-    src: "/home/{{ user }}/.local"
-    dest: "{{ root_home }}/.local"
+    src: "/home/{{ user }}/{{ item.item }}"
+    dest: "{{ root_home }}/{{ item.item }}"
     state: link
-  when: root_home is defined and root_home | length > 0
-  ignore_errors: yes
+  loop: "{{ root_nvim_dirs.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+  when: not (item.stat.exists and item.stat.isdir and not item.stat.islnk)
   tags:
     - nvim
     - root

@@ -25,17 +25,31 @@
     group: "{{ user }}"
     state: link
 
+# The plugins listed with @plugin in .tmux.conf are vendored as submodules,
+# which the clone above pulls; this covers any listed but not yet vendored.
+- name: Install any tmux plugins that TPM lists but the clone did not bring
+  command: ~/.tmux/plugins/tpm/bin/install_plugins
+  register: tpm_install
+  changed_when: "'Installing' in tpm_install.stdout"
+  tags:
+    - tmux
+
 - name: Get the home path for root
   become: true
-  shell: |
-    cat /etc/passwd | grep root | awk 'BEGIN {FS=":"}; {print $6}'
-  register: root_path
+  ansible.builtin.getent:
+    database: passwd
+    key: root
+  register: root_getent
+  tags:
+    - tmux
 
-- name: Create a softlink to the .tmux.conf file for the root user
-  ignore_errors: True
+- name: Give root the same tmux configuration
   become: yes
   file:
-    src: /home/{{ user }}/.tmux/.tmux.conf
-    dest: "{{ root_path.stdout }}/.tmux.conf"
+    src: "/home/{{ user }}/.tmux/.tmux.conf"
+    dest: "{{ root_getent.ansible_facts.getent_passwd['root'][4] }}/.tmux.conf"
     state: link
+    force: yes
+  tags:
+    - tmux
 

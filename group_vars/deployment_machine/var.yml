@@ -1,3 +1,5 @@
 ---
-user: pi
-group: pi
+# user and group default to the login account (group_vars/all/vars.yml).
+# Uncomment to force a different account on this group, e.g. a Raspberry Pi:
+# user: pi
+# group: pi

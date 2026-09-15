@@ -1,1 +1,12 @@
-this is not used
+#!/bin/sh
+# Ansible runs this (it is executable) and uses its output as the vault
+# password. The password itself lives only in ~/.bashrc on the deployment
+# machine, as VAULT_PASSWORD; this file is safe to commit.
+#
+# When VAULT_PASSWORD is unset this prints a placeholder and warns (ansible
+# refuses an empty password), so playbooks that touch no vaulted data still
+# run; decrypting anything then fails, as it should.
+if [ -z "$VAULT_PASSWORD" ]; then
+  echo "warning: VAULT_PASSWORD is not set; vaulted data cannot be decrypted (see roles/ansible)" >&2
+fi
+printf '%s\n' "${VAULT_PASSWORD:-unset-see-roles-ansible}"

@@ -1,0 +1,16 @@
+---
+# Ubuntu 25.10 and later make sudo-rs the default `sudo`. It prints password
+# prompts as "[sudo: <prompt>] Password:", which ansible's sudo plugin cannot
+# recognise, so every privileged task times out. Classic sudo is still
+# installed beside it as /usr/bin/sudo.ws and prints the prompt ansible
+# expects. Use it wherever it exists; elsewhere /usr/bin/sudo is classic sudo.
+# Runs before any privileged task, needs no privilege itself.
+- name: Look for classic sudo beside sudo-rs
+  stat:
+    path: /usr/bin/sudo.ws
+  register: classic_sudo
+
+- name: Use classic sudo for privilege escalation where sudo-rs is the default
+  set_fact:
+    ansible_become_exe: /usr/bin/sudo.ws
+  when: classic_sudo.stat.exists
