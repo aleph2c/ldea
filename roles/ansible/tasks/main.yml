@@ -15,11 +15,14 @@
   tags:
     - ansible
 
-# Only when absent: an existing line is left exactly as it is.
+# Only when absent: an existing line is left exactly as it is. The path is
+# relative on purpose: every ansible repo (ldea, missionloops_ansible) keeps
+# its own .vault_pass script at its root, and playbooks are run from there,
+# so the one VAULT_PASSWORD in .bashrc serves every repo's vault.
 - name: Point ansible at the vault password script
   lineinfile:
     path: ~/.bashrc
-    line: 'export ANSIBLE_VAULT_PASSWORD_FILE={{ playbook_dir }}/.vault_pass'
+    line: 'export ANSIBLE_VAULT_PASSWORD_FILE=./.vault_pass'
   when: vault_file_export.stdout == '0'
   tags:
     - ansible

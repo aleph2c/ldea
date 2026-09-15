@@ -6,10 +6,12 @@ Install a trusted deployment machine:
 
   * A deployment machine with access to github
   * An ssh forwarding strategy to keep your keys off of your target machines
-  * Access to an encrypted vault: the deployment-machine playbook points
-    ``ANSIBLE_VAULT_PASSWORD_FILE`` at ``.vault_pass``, a committed script that
-    prints ``VAULT_PASSWORD`` from that machine's ``~/.bashrc``, so nothing
-    secret is ever committed and machines without a vault are unaffected
+  * The vault plumbing the other ansible repos rely on: the deployment-machine
+    playbook exports ``ANSIBLE_VAULT_PASSWORD_FILE=./.vault_pass`` (relative, so
+    each repo's own committed script is used from its root) and a
+    ``VAULT_PASSWORD`` placeholder in ``~/.bashrc``. ldea itself has nothing
+    encrypted; ``missionloops_ansible`` does, and its vaults open with that one
+    password
 
 Install the following on a target(s) from the deployment machine:
 
