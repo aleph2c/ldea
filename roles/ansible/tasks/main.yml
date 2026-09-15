@@ -7,11 +7,22 @@
     - 'eval $(ssh-agent)'
     - 'ssh-add ~/.ssh/id_rsa'
 
-- name: Point ansible at the vault password script (absolute path, replaces any older line)
+- name: Test whether .bashrc already points ansible at a vault password file
+  shell:
+    grep -c "^export ANSIBLE_VAULT_PASSWORD_FILE=" ~/.bashrc || true
+  register: vault_file_export
+  changed_when: false
+  tags:
+    - ansible
+
+# Only when absent: an existing line is left exactly as it is.
+- name: Point ansible at the vault password script
   lineinfile:
     path: ~/.bashrc
-    regexp: '^export ANSIBLE_VAULT_PASSWORD_FILE='
     line: 'export ANSIBLE_VAULT_PASSWORD_FILE={{ playbook_dir }}/.vault_pass'
+  when: vault_file_export.stdout == '0'
+  tags:
+    - ansible
   tags:
     - ansible
 
@@ -19,6 +30,7 @@
   shell:
     grep -c "^export VAULT_PASSWORD=" ~/.bashrc || true
   register: vault_password
+  changed_when: false
   tags:
     - ansible
 
