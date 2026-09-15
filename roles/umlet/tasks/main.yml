@@ -78,6 +78,20 @@
     - umlet
     - shell
 
+# umlet.sh honours UMLET_JAVA_OPTS, so the Nimbus look-and-feel is set from the
+# environment rather than by editing the script (the class name is the
+# javax.swing one; the old com.sun.java one no longer loads).
+- name: Use the Nimbus look-and-feel for UMLet, unless the shell already sets it
+  lineinfile:
+    path: "{{ bash_local }}"
+    create: yes
+    mode: '0644'
+    line: "export UMLET_JAVA_OPTS='-Dswing.defaultlaf=javax.swing.plaf.nimbus.NimbusLookAndFeel'"
+  when: "'UMLET_JAVA_OPTS' not in shell_config.stdout"
+  tags:
+    - umlet
+    - shell
+
 # umlet.sh insists on a display even for -action=convert; an empty DISPLAY
 # makes it run headless.
 - name: Alias umlet to run headless, unless the shell already does
