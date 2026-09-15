@@ -1,3 +1,4 @@
 ---
-ansible_git_repo: git@github.com:aleph2c/ldea.git
-ansible_dir: ldea
+# roles/ansible/vars/main.yml
+bashrc_home: "{{ ansible_facts['env']['HOME'] }}"
+bash_local: "{{ bashrc_home }}/.config/bash/local.sh"

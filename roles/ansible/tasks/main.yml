@@ -1,31 +1,42 @@
 ---
-- name: Enable ssh-forwarding from ldea deployment machine
-  lineinfile:
-    path: ~/.bashrc
-    line: "{{ item }}"
-  loop:
-    - 'eval $(ssh-agent)'
-    - 'ssh-add ~/.ssh/id_rsa'
-
-- name: Test whether .bashrc already points ansible at a vault password file
-  shell:
-    grep -c "^export ANSIBLE_VAULT_PASSWORD_FILE=" ~/.bashrc || true
-  register: vault_file_export
+# Everything the deployment machine needs in its shell goes to
+# ~/.config/bash/local.sh (machine-specific), never to the shared ~/.bashrc,
+# and only when the shell does not already provide it.
+- name: See what the shell already configures
+  shell: cat "{{ bashrc_home }}/.bashrc" "{{ bash_local }}" 2>/dev/null || true
+  register: shell_config
   changed_when: false
   tags:
     - ansible
+    - shell
 
-# Only when absent: an existing line is left exactly as it is. The path is
-# relative on purpose: every ansible repo (ldea, missionloops_ansible) keeps
-# its own .vault_pass script at its root, and playbooks are run from there,
-# so the one VAULT_PASSWORD in .bashrc serves every repo's vault.
-- name: Point ansible at the vault password script
+- name: Start an ssh agent at login, unless the shell already does
   lineinfile:
-    path: ~/.bashrc
-    line: 'export ANSIBLE_VAULT_PASSWORD_FILE=./.vault_pass'
-  when: vault_file_export.stdout == '0'
+    path: "{{ bash_local }}"
+    create: yes
+    mode: '0644'
+    line: "{{ item }}"
+  loop:
+    - 'eval "$(ssh-agent -s)" > /dev/null'
+    - 'ssh-add > /dev/null 2>&1'
+  when: "'ssh-agent' not in shell_config.stdout"
   tags:
     - ansible
+    - shell
+
+# The path is relative on purpose: every ansible repo (ldea, missionloops_ansible)
+# keeps its own .vault_pass script at its root and playbooks run from there, so
+# the one VAULT_PASSWORD in ~/.config/bash/secrets.sh serves every repo's vault.
+- name: Point ansible at each repo's vault password script, unless already set
+  lineinfile:
+    path: "{{ bash_local }}"
+    create: yes
+    mode: '0644'
+    line: 'export ANSIBLE_VAULT_PASSWORD_FILE=./.vault_pass'
+  when: "'ANSIBLE_VAULT_PASSWORD_FILE=' not in shell_config.stdout"
+  tags:
+    - ansible
+    - shell
   tags:
     - ansible
 
@@ -38,20 +49,16 @@
   tags:
     - ansible
 
-- name: Test to see if ANSIBLE_HOST_KEY_CHECKING is defined in the .bashrc file
-  shell:
-    grep -c "ANSIBLE_HOST_KEY_CHECKING" ~/.bashrc || true
-  register: ansible_host_key_checking_bash
-  tags:
-    - ansible
-
-- name: Turn off ansible hostkey checking
+- name: Turn off ansible host key checking, unless already set
   lineinfile:
-    path: ~/.bashrc
+    path: "{{ bash_local }}"
+    create: yes
+    mode: '0644'
     line: export ANSIBLE_HOST_KEY_CHECKING=False
-  when: ansible_host_key_checking_bash.stdout == '0'
+  when: "'ANSIBLE_HOST_KEY_CHECKING=' not in shell_config.stdout"
   tags:
     - ansible
+    - shell
 
 - name: Write the ansible configuration file
   become: true
