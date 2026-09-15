@@ -8,6 +8,24 @@
   tags:
     - tmux
 
+# ansible's git task resets the checkout to origin's head: uncommitted edits
+# make it refuse, but commits that were never pushed are silently dropped.
+# Refuse to run it on a checkout that is ahead of its remote.
+- name: Count commits in ~/.tmux that were never pushed
+  command: git -C ~/.tmux rev-list --count @{upstream}..HEAD
+  register: tmux_unpushed
+  changed_when: false
+  failed_when: false
+  tags:
+    - tmux
+
+- name: Refuse to discard unpushed commits in ~/.tmux
+  fail:
+    msg: "~/.tmux has {{ tmux_unpushed.stdout }} commit(s) not pushed to its remote; the update would reset them away. Push (or move) them first."
+  when: tmux_unpushed.rc == 0 and (tmux_unpushed.stdout | int) > 0
+  tags:
+    - tmux
+
 - name: Install custom .tmux.conf file
   git:
     repo: "{{ tmuxc_repo }}"

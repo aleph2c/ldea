@@ -281,6 +281,9 @@ tmux                     # custom configuration in force
 git config --get init.templatedir   # ~/.git_template
 ```
 
-The nvim role pulls the init.vim repository with ``update: yes``. If the
-checkout on the target has local modifications, that task fails rather than
-overwrite them; commit or stash them and re-run.
+The nvim and tmux roles pull their configuration repositories with
+``update: yes``, which resets the checkout to what the remote has. Uncommitted
+edits make the task refuse; commits that were never pushed would be silently
+dropped, so both roles first count commits ahead of the remote and fail with a
+message if there are any. Either way the rule is the same: commit **and push**
+on the machine where you edited before running ldea there.

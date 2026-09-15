@@ -58,6 +58,24 @@
   tags:
     - nvim
 
+# ansible's git task resets the checkout to origin's head: uncommitted edits
+# make it refuse, but commits that were never pushed are silently dropped.
+# Refuse to run it on a checkout that is ahead of its remote.
+- name: Count commits in {{ neovim_config_dir }} that were never pushed
+  command: git -C {{ neovim_config_dir }} rev-list --count @{upstream}..HEAD
+  register: nvim_unpushed
+  changed_when: false
+  failed_when: false
+  tags:
+    - nvim
+
+- name: Refuse to discard unpushed commits in {{ neovim_config_dir }}
+  fail:
+    msg: "{{ neovim_config_dir }} has {{ nvim_unpushed.stdout }} commit(s) not pushed to its remote; the update would reset them away. Push (or move) them first."
+  when: nvim_unpushed.rc == 0 and (nvim_unpushed.stdout | int) > 0
+  tags:
+    - nvim
+
 # The configuration repo tracks autoload/plug.vim itself, so vim-plug needs
 # no separate download.
 - name: Pull down the init.vim configuration from github
