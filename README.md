@@ -31,8 +31,36 @@ Install the following on a target(s) from the deployment machine:
     machine only) and ``secrets.sh`` (mode 600; holds a ``VAULT_PASSWORD``
     placeholder you overwrite with the real one, plus any API keys; never
     committed or backed up)
-  * Install and then fix Umlet ('umlet' will work from command line)
-  * Install a custom umlet template
+  * UMLet 15.1 under ``~/umlet-standalone-15.1/Umlet`` with the custom
+    statechart palette; ``umlet.sh`` on the PATH, a headless ``umlet`` alias and
+    the Nimbus look-and-feel, all set from ``~/.config/bash/local.sh``
+
+# Configuration repos and the shell layout
+
+Nothing personal is copied from the deployment machine. Each configuration is
+a git repo that ldea clones and symlinks into place, so you edit it on any
+machine, commit **and push**, and the next ldea run elsewhere pulls it down:
+
+| Repo | Cloned to | Linked from |
+|---|---|---|
+| ``aleph2c/init.vim`` | ``~/.config/nvim`` | (nvim reads it there) |
+| ``aleph2c/tmux.conf`` | ``~/.tmux`` | ``~/.tmux.conf`` |
+| ``aleph2c/bashrc`` | ``~/.config/bash`` | ``~/.bashrc`` -> ``~/.config/bash/bashrc`` |
+| ``aleph2c/pdb.conf`` | ``~/.pdbrc_repo`` | ``~/.pdbrc``, ``~/.pdbrc.py`` |
+
+The git tasks reset a checkout to what the remote has, so the nvim, tmux and
+bashrc roles refuse to run on a checkout with unpushed commits: push first.
+
+The shell is split three ways so the shared file can be public:
+
+- ``~/.config/bash/bashrc`` (tracked): everything that holds on every machine.
+- ``~/.config/bash/local.sh`` (ignored): this machine only. The ansible and
+  umlet roles write their lines here, and only if the line is not already
+  present, so anything you put there by hand is left alone.
+- ``~/.config/bash/secrets.sh`` (ignored, mode 600): keys and passwords,
+  including ``VAULT_PASSWORD``. Values go here and nowhere else; the repo's
+  pre-commit hook refuses the two ignored files and credential-shaped lines,
+  but it matches patterns, so the rule still has to be kept by hand.
 
 # Playbooks and roles
 
@@ -42,7 +70,7 @@ Install the following on a target(s) from the deployment machine:
 | ``python_env.yml`` | all | pdb, pip |
 | ``umlet.yml`` | all | umlet (pulls in java and pip) |
 | ``site.yml`` | | the three above, in that order |
-| ``deployment_machine.yml`` | deployment_machine | git, ansible (pulls in ssh and redis), nvim |
+| ``deployment_machine.yml`` | deployment_machine | git, bashrc, ansible (pulls in ssh and redis), nvim |
 
 # Initial setup of Deployment Machine
 
@@ -285,6 +313,8 @@ nvim                     # opens with plugins, no startup messages
 nvim +checkhealth        # Python 3 provider OK
 tmux                     # custom configuration in force
 git config --get init.templatedir   # ~/.git_template
+readlink ~/.bashrc       # ~/.config/bash/bashrc
+ls -l ~/.config/bash/secrets.sh     # -rw------- and a VAULT_PASSWORD line
 ```
 
 The nvim and tmux roles pull their configuration repositories with
