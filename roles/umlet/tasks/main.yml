@@ -1,102 +1,92 @@
 ---
-- name: Install unzip
-  become: yes
-  apt:
-    name: unzip
-    state: present
-  tags:
-    - umlet
+# roles/umlet/tasks/main.yml
+#
+# UMLet {{ umlet_version }} unpacked under ~/umlet-standalone-<version>/Umlet,
+# the custom statechart palette, and the shell lines that put umlet.sh on the
+# PATH. Shell lines go to ~/.config/bash/local.sh (this machine's file), never
+# to the shared ~/.bashrc, and only if not already present.
 
-- name: Install ms fonts
+- name: Accept the Microsoft core fonts licence so the install is non-interactive
   become: yes
-  apt:
+  debconf:
     name: ttf-mscorefonts-installer
-    state: present
+    question: msttcorefonts/accepted-mscorefonts-eula
+    value: "true"
+    vtype: select
   tags:
     - umlet
 
-- name: Install inotify-toools
+- name: Install what UMLet and the diagram pipeline need
   become: yes
   apt:
-    name: inotify-tools
+    name:
+      - unzip
+      - ttf-mscorefonts-installer
+      - inotify-tools
+      - graphviz
     state: present
   tags:
     - umlet
 
-- name: Install graphviz
-  become: yes
-  apt:
-    name: graphviz
-    state: present
-  tags:
-    - umlet
-
-- name: Check if the Umlet directory exists
+- name: Check whether UMLet {{ umlet_version }} is already unpacked
   stat:
-    path: "/home/{{ user }}/Umlet"
-  register: umlet
+    path: "{{ umlet_dir }}/umlet.jar"
+  register: umlet_jar
   tags:
     - umlet
-    - umlet.sh
 
-
-- name: Unarchive UMLet 14.3.0
+- name: Unpack UMLet {{ umlet_version }}
   unarchive:
-    src: https://www.umlet.com/download/umlet_14_3/umlet-standalone-14.3.0.zip
-    dest: "/home/{{ user }}"
+    src: "{{ umlet_zip }}"
+    dest: "{{ umlet_root }}"
     remote_src: yes
-  when: umlet.stat.exists == False
+  when: not umlet_jar.stat.exists
   tags:
     - umlet
 
-- name: Fix a bug in umlet.sh
-  get_url:
-    url: https://raw.githubusercontent.com/umlet/umlet/master/umlet-standalone/src/exe/umlet.sh
-    dest: "/home/{{ user }}/Umlet/umlet.sh"
-  when: umlet.stat.exists == False
-  tags:
-    - umlet
-    - umlet.sh
-
-- name: Enable execution of umlet.sh and umlet.jar files
+- name: Make umlet.sh executable
   file:
-    path: "/home/{{ user }}/Umlet/{{ item }}"
-    mode: '0744'
-  when: umlet.stat.exists == False
-  loop:
-    - umlet.sh
-    - umlet.jar
+    path: "{{ umlet_dir }}/umlet.sh"
+    mode: '0755'
   tags:
     - umlet
-    - umlet.sh
 
-
-- name: Add umlet.sh to the path
-  lineinfile:
-    path: "/home/{{ user }}/.bashrc"
-    line: export PATH=$PATH:$HOME/Umlet
-  when: umlet.stat.exists == False
-  tags:
-    - bashrc
-    - umlet
-    - umlet.sh
-
-- name: Work around Umlet headless bug
-  lineinfile:
-    path: "/home/{{ user }}/.bashrc"
-    line: alias umlet="DISPAY= umlet.sh"
-  when: umlet.stat.exists == False
-  tags:
-    - bashrc
-    - umlet
-    - umlet.sh
-
-- name: Copy Custom UML State Machine.uxf into pallet
+- name: Install the custom statechart palette
   get_url:
-    url: https://raw.githubusercontent.com/aleph2c/umlet-statechart-template/master/Custom%20UML%20State%20Machine.uxf
-    dest: "/home/{{ user }}/Umlet/palettes/Custom UML State Machine.uxf"
-  when: umlet.stat.exists == False
+    url: "{{ umlet_palette_url }}"
+    dest: "{{ umlet_dir }}/palettes/Custom UML State Machine.uxf"
+    mode: '0644'
   tags:
     - umlet
-    - umlet.sh
 
+- name: See what the shell already configures
+  shell: cat "{{ umlet_home }}/.bashrc" "{{ bash_local }}" 2>/dev/null || true
+  register: shell_config
+  changed_when: false
+  tags:
+    - umlet
+    - shell
+
+- name: Put umlet.sh on the PATH, unless the shell already does
+  lineinfile:
+    path: "{{ bash_local }}"
+    create: yes
+    mode: '0644'
+    line: 'export PATH=$PATH:{{ umlet_dir | replace(umlet_home, "$HOME") }}'
+  when: "'umlet-standalone' not in shell_config.stdout"
+  tags:
+    - umlet
+    - shell
+
+# umlet.sh insists on a display even for -action=convert; an empty DISPLAY
+# makes it run headless.
+- name: Alias umlet to run headless, unless the shell already does
+  lineinfile:
+    path: "{{ bash_local }}"
+    create: yes
+    mode: '0644'
+    line: "alias umlet='DISPLAY= umlet.sh'"
+  when: "'alias umlet=' not in shell_config.stdout"
+  tags:
+    - umlet
+    - shell

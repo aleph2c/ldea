@@ -1,0 +1,10 @@
+---
+# roles/umlet/vars/main.yml
+umlet_version: "15.1"
+umlet_home: "{{ ansible_facts['env']['HOME'] }}"
+# the zip unpacks to a top-level Umlet/ directory inside this root
+umlet_root: "{{ umlet_home }}/umlet-standalone-{{ umlet_version }}"
+umlet_dir: "{{ umlet_root }}/Umlet"
+umlet_zip: "https://www.umlet.com/download/umlet_{{ umlet_version | replace('.', '_') }}/umlet-standalone-{{ umlet_version }}.zip"
+umlet_palette_url: "https://raw.githubusercontent.com/aleph2c/umlet-statechart-template/master/Custom%20UML%20State%20Machine.uxf"
+bash_local: "{{ umlet_home }}/.config/bash/local.sh"
