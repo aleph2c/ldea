@@ -86,8 +86,11 @@
   tags:
     - nvim
 
-- name: Install the nvim plugins
-  command: nvim --headless "+silent! PlugInstall!" +qall!
+# PlugInstall adds plugins newly listed in init.vim; PlugClean! removes ones
+# no longer listed, so a plugin dropped from the config disappears from every
+# machine on its next run instead of lingering.
+- name: Install listed nvim plugins and remove unlisted ones
+  command: nvim --headless "+silent! PlugInstall!" "+silent! PlugClean!" +qall!
   changed_when: false
   tags:
     - nvim

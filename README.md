@@ -36,8 +36,6 @@ Install the following on a target(s) from the deployment machine:
 | ``site.yml`` | | the three above, in that order |
 | ``deployment_machine.yml`` | deployment_machine | git, ansible (pulls in ssh and redis), nvim |
 
-The ``vim`` role, which builds vim 9 from source, is not run by any playbook.
-
 # Initial setup of Deployment Machine
 
 We want to use ansible to automate the installation of our development tools
