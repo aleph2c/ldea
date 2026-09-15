@@ -24,11 +24,13 @@ Install the following on a target(s) from the deployment machine:
     ctags index on commit, merge, checkout and rebase
   * Customize the python environment
   * Customize the python debugger
-  * Customize your .bashrc file, and create the two files it sources when they
-    are missing, under the XDG config directory: ``~/.config/bash/local.sh``
-    (this machine only) and ``~/.config/bash/secrets.sh`` (mode 600; holds a
-    ``VAULT_PASSWORD`` placeholder you overwrite with the real one, plus any API
-    keys; never committed or backed up)
+  * Your shell configuration: clone ``aleph2c/bashrc`` to ``~/.config/bash``,
+    symlink ``~/.bashrc`` to the ``bashrc`` inside it (the original is kept as
+    ``~/.bashrc.dist``), install its pre-commit hook that refuses secrets, and
+    create the two files it sources when they are missing: ``local.sh`` (this
+    machine only) and ``secrets.sh`` (mode 600; holds a ``VAULT_PASSWORD``
+    placeholder you overwrite with the real one, plus any API keys; never
+    committed or backed up)
   * Install and then fix Umlet ('umlet' will work from command line)
   * Install a custom umlet template
 
@@ -36,7 +38,7 @@ Install the following on a target(s) from the deployment machine:
 
 | Playbook | Runs on | Roles |
 |---|---|---|
-| ``basic_development_env.yml`` | targets | git, tmux, nvim, bashrc |
+| ``basic_development_env.yml`` | targets | git, tmux, nvim, bashrc (clones aleph2c/bashrc) |
 | ``python_env.yml`` | all | pdb, pip |
 | ``umlet.yml`` | all | umlet (pulls in java and pip) |
 | ``site.yml`` | | the three above, in that order |

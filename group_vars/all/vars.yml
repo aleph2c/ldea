@@ -9,4 +9,5 @@ group: "{{ ansible_facts['user_id'] }}"
 git_user: Scott Volk
 git_email: scott@13down.io
 tmuxc_repo: "git@github.com:aleph2c/tmux.conf.git"
+bashrc_repo: "git@github.com:aleph2c/bashrc.git"
 pdbrc_repo: "git@github.com:aleph2c/pdb.conf.git"
